@@ -4,10 +4,22 @@ from .Server import create_server_connection, execute_query, read_query
 # Criação de usuário
 def create_usuario(data):
     query = "INSERT INTO usuario (nome, email, senha) VALUES (%s, %s, %s)"
-    conexao = create_server_connection()
-    if conexao:
-        execute_query(conexao, query, (data['nome'], data['email'], data['senha']))
-        conexao.close()
+    conexao = None
+    
+    try:
+        conexao = create_server_connection()
+        if conexao:
+            # Executa a query para inserir os dados do usuário
+            execute_query(conexao, query, (data['nome'], data['email']))
+
+    except Error as e:
+        print(f"Erro ao criar o usuário: {e}")
+        return {"message": f"Erro ao criar o usuário: {str(e)}"}, 500
+        
+    finally:
+        # Garante que a conexão será fechada
+        if conexao:
+            conexao.close()
 
 # Retornar todos os usuários
 def get_usuarios():
