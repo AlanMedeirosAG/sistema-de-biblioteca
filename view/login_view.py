@@ -5,6 +5,7 @@ def main(page: ft.Page):
     login_view(page)
 
 def login_view(page: ft.Page):
+    page.title = 'Login'
     page.clean()
     page.horizontal_alignment = 'center'
     page.vertical_alignment = 'center'
@@ -77,7 +78,7 @@ def login_view(page: ft.Page):
                 ft.Container(
                     bgcolor=ft.colors.GREY_900,
                     width=400,
-                    height=320,
+                    height=350,
                     border_radius=10,
                     content=ft.Column([
                         ft.Container(
@@ -106,7 +107,13 @@ def login_view(page: ft.Page):
                                     on_click=lambda _: page.go("/cadastro")
                                 ),
                                 ft.TextButton('Esqueci minha senha')
-                            ], width=300, alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                            ], width=300, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                            ft.Container(
+                                content=ft.TextButton(
+                                    text='Sou Administrador',
+                                    on_click=lambda _: page.go("/loginadm")
+                                ), 
+                            margin=30, alignment=ft.alignment.bottom_right),
                         ], spacing=12, horizontal_alignment='center'),
                     ], horizontal_alignment='center')
                 )
