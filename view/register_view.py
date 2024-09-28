@@ -3,7 +3,7 @@ import requests
 #from mysql.connector import Error
 from werkzeug.security import generate_password_hash, check_password_hash
 
-def registerteste_view(page: ft.Page):
+def register_view(page: ft.Page):
     page.clean()
     page.horizontal_alignment = 'center'
     page.vertical_alignment = 'center'
