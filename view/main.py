@@ -12,7 +12,7 @@ def main(page: ft.Page):
             page.views.append(login_view(page))
 
         if page.route == "/cadastro":
-            page.views.append(registerteste_view(page))
+            page.views.append(register_view(page))
 
         page.update()
 
