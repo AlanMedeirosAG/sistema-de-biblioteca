@@ -50,19 +50,11 @@ def registerteste_view(page: ft.Page):
         can_reveal_password=True,
         keyboard_type=ft.KeyboardType.VISIBLE_PASSWORD,
     )
-    telefone = ft.TextField(
-        label='Digite o seu telefone',
-        width=300,
-        height=40,
-        border_radius=40,
-        prefix_icon=ft.icons.PHONE,
-        text_vertical_align=1,
-        keyboard_type=ft.KeyboardType.PHONE,
-    )
+
     message_container = ft.Container(alignment=ft.alignment.center)
     def cadastrar_click(e):
         message_container.content = None
-        if not nome.value or not email.value or not senha.value or not senhaconfirm.value or not telefone.value:
+        if not nome.value or not email.value or not senha.value or not senhaconfirm.value:
             message_container.content= ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
@@ -75,7 +67,6 @@ def registerteste_view(page: ft.Page):
             "nome": nome.value,
             "email": email.value,
             "senha": senha.value,
-            "telefone": telefone.value
         }
 
         # Enviar dados para o backend Flask
