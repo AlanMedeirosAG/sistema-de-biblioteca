@@ -9,8 +9,7 @@ def create_usuario(data):
     try:
         conexao = create_server_connection()
         if conexao:
-            # Executa a query para inserir os dados do usuário
-            execute_query(conexao, query, (data['nome'], data['email']))
+            execute_query(conexao, query, (data['nome'], data['email'],data['senha']))
 
     except Error as e:
         print(f"Erro ao criar o usuário: {e}")
@@ -34,15 +33,21 @@ def get_usuarios():
 def get_usuario_login(email, senha):
     query = "SELECT * FROM usuario WHERE email = %s"
     conexao = create_server_connection()
+    
     if conexao:
         resultado = read_query(conexao, query, (email,))
         conexao.close()
 
-        # Verificação de senha
-        if resultado and resultado[0]['senha'] == senha:
-            return resultado[0]
+        if resultado:  
+            usuario = resultado[0] 
+            if check_password_hash(usuario[3],senha):  
+                return usuario 
+            else:
+                print("Senha incorreta")
+                return None  
         else:
-            return None
+            print("Email incorreta")
+            return None    
 
 # Atualizar usuário
 def update_usuario(id, data):
