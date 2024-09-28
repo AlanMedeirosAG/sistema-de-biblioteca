@@ -6,9 +6,19 @@ usuario_bp = Blueprint('usuario_bp', __name__)
 # Rota para criar um novo usuário (POST /usuario)
 @usuario_bp.route('/usuario', methods=['POST'])
 def create_usuario_route():
-    data = request.json
-    create_usuario(data)  # Chama a função que cria o usuário
-    return jsonify({"message": "Usuário inserido com sucesso!"}), 201
+    try:
+        data = request.json
+        # Validação dos dados
+        if not data or 'nome' not in data or 'email' not in data or 'senha' not in data:
+            return jsonify({"message": "Campos 'nome', 'email' e 'senha' são obrigatórios."}), 400
+
+        create_usuario(data)  # Assumindo que sua função já faz as verificações necessárias
+        # Retorno de sucesso
+        return jsonify({"message": "Usuário inserido com sucesso!"}), 201
+    
+    except Exception as e:
+        # Tratamento genérico de erros, pode incluir logs aqui
+        return jsonify({"message": f"Erro ao inserir usuário: {str(e)}"}), 500
 
 # Rota para obter todos os usuários (GET /usuario)
 @usuario_bp.route('/usuario', methods=['GET'])
