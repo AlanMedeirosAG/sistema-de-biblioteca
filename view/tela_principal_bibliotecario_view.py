@@ -4,6 +4,7 @@ def main(page: ft.Page):
     def show_add_book_dialog(e):
         # Definindo os TextFields para a entrada do usuário (removido expand=True)
         titulo_livro = ft.TextField(label="Título do Livro", width=400)
+        genero = ft.TextField(label="Gênero", width=400)
         autor_livro = ft.TextField(label="Autor", width=400)
 
         # Definindo um campo de número para a quantidade e inicializando o valor
@@ -32,7 +33,7 @@ def main(page: ft.Page):
 
         # Função para salvar os dados do novo livro
         def add_book(e):
-            print(f"Título: {titulo_livro.value}, Autor: {autor_livro.value}, Quantidade: {quantidade_de_livros.value}")
+            print(f"Título: {titulo_livro.value}, Autor: {autor_livro.value},Gênero: {genero.value}, Quantidade: {quantidade_de_livros.value}")
             close_dialog(e)
 
         # Função para simular a escolha de arquivo ou tirar foto
@@ -67,6 +68,7 @@ def main(page: ft.Page):
                         spacing=10
                     ),
                     titulo_livro,
+                    genero,
                     autor_livro,
                     ft.Row(
                         controls=[
@@ -103,30 +105,23 @@ def main(page: ft.Page):
         animation_duration=300,
         tabs=[
             ft.Tab(
-                tab_content=ft.Icon(ft.icons.SEARCH),
-                content=ft.Container(
-                    content=ft.Row(
-                        controls=[
-                            ft.TextField(
-                                label="Qual livro você quer buscar hoje?", 
-                                expand=True
-                            ),
-                            ft.IconButton(
-                                icon="search"
-                            )
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        spacing=10
-                    ),
-                    alignment=ft.alignment.top_left,
-                    padding=ft.padding.all(10)
-                ),
-            ),
-            ft.Tab(
                 text="Estoque de Livros",
                 content=ft.Container(
                     content=ft.Column(
                         controls=[
+                            ft.Row(
+                                controls=[
+                                    ft.TextField(
+                                        label="Buscar no estoque", 
+                                        expand=True
+                                    ),
+                                    ft.IconButton(
+                                        icon="search"
+                                    )
+                                ],
+                                alignment=ft.MainAxisAlignment.START,
+                                spacing=10
+                            ),
                             ft.ElevatedButton(
                                 text="Adicionar Novo Livro",
                                 icon="add",
@@ -140,15 +135,11 @@ def main(page: ft.Page):
                                         controls=[
                                             ft.Row(
                                                 controls=[
-                                                    ft.Image(
-                                                        src="https://m.media-amazon.com/images/I/91+1SUO3vUL._AC_UF1000,1000_QL80_.jpg",
-                                                        width=100,
-                                                        height=150
-                                                    ),
                                                     ft.Column(
                                                         controls=[
                                                             ft.Text("As crônicas de Gelo e Fogo"),
                                                             ft.Text("Autor: George R.R. Martin"),
+                                                            ft.Text("Gênero: Fantasia épica"),
                                                             ft.Text("Quantidade: 300"),
                                                         ],
                                                         spacing=5
@@ -179,11 +170,150 @@ def main(page: ft.Page):
                     alignment=ft.alignment.top_left,
                     padding=ft.padding.all(10)
                 ),
+                icon=ft.icons.BOOK
             ),
             ft.Tab(
-                text="Histórico de Usuários",
-                icon=ft.icons.SETTINGS,
+                text="Histórico de Empréstimos",
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Row(
+                                controls=[
+                                    ft.TextField(
+                                        label="Buscar usuários", 
+                                        expand=True
+                                    ),
+                                    ft.IconButton(
+                                        icon="search"
+                                    )
+                                ],
+                                alignment=ft.MainAxisAlignment.START,
+                                spacing=10
+                            ),
+                            ft.ElevatedButton(
+                                text="Adicionar Novo Empréstimo",
+                                icon="add",
+                                height=50,
+                                width=300,
+                                on_click=lambda e: print("Adicionar Novo Empréstimo")
+                            ),
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        spacing=10
+                    ),
+                    alignment=ft.alignment.top_left,
+                    padding=ft.padding.all(10)
+                ),
+                icon=ft.icons.PERSON
             ),
+            ft.Tab(
+                text="Configurações",
+                content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Text("Configurações Gerais"),
+                            ft.Switch(label="Notificações"),
+                            ft.Switch(label="Modo Escuro"),
+                            ft.TextButton(text="Redefinir Configurações", on_click=lambda e: print("Configurações Redefinidas")),
+                            ft.Text("Configurações de Usuário"),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Dados de Bibliotecário", 
+                                        expand=True, 
+                                        icon="Person",
+                                        icon_color="white",
+                                        color="white",
+                                        height=60,
+                                        style=ft.ButtonStyle(
+                                            alignment=ft.alignment.center_left,
+                                            shape=ft.RoundedRectangleBorder(radius=0)
+                                        )
+                                    )
+                                ]
+                            ),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Editar Perfil", 
+                                        expand=True, 
+                                        icon="Edit",
+                                        icon_color="white",
+                                        color="white",
+                                        height=60,
+                                        style=ft.ButtonStyle(
+                                            alignment=ft.alignment.center_left,
+                                            shape=ft.RoundedRectangleBorder(radius=0)
+                                        )
+                                    )
+                                ]
+                            ),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Alterar Senha", 
+                                        expand=True, 
+                                        icon="Lock",
+                                        icon_color="white",
+                                        color="white",
+                                        height=60,
+                                        style=ft.ButtonStyle(
+                                            alignment=ft.alignment.center_left,
+                                            shape=ft.RoundedRectangleBorder(radius=0)
+                                        )
+                                    )
+                                ]
+                            ),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Política de Privacidade e Termos de Uso", 
+                                        expand=True, 
+                                        icon="Menu_book",
+                                        icon_color="white",
+                                        color="white",
+                                        height=60,
+                                        style=ft.ButtonStyle(
+                                            alignment=ft.alignment.center_left,
+                                            shape=ft.RoundedRectangleBorder(radius=0)
+                                        )
+                                    )
+                                ]
+                            ),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Excluir Conta", 
+                                        expand=True, 
+                                        icon="HIGHLIGHT_REMOVE",
+                                        icon_color="red",
+                                        color="red",
+                                        height=60,
+                                        style=ft.ButtonStyle(
+                                            alignment=ft.alignment.center_left,
+                                            shape=ft.RoundedRectangleBorder(radius=0)
+                                        )
+                                    )
+                                ]
+                            ),
+                            ft.Row(
+                                controls=[
+                                    ft.CupertinoButton(
+                                        text="Sair da Conta", 
+                                        color="red"
+                                    )
+                                ]
+                            ),
+                            
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        spacing=10
+                    ),
+                    alignment=ft.alignment.top_left,
+                    padding=ft.padding.all(10)
+                ),
+                icon=ft.icons.SETTINGS,
+            )
         ],
         expand=1
     )
