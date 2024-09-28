@@ -9,10 +9,6 @@ def login_view(page: ft.Page):
     page.vertical_alignment = 'center'
     page.window_maximized = True
 
-    def go_to_register(e):
-        from view import registerteste_view
-        registerteste_view(page)
-    
     def login_click(e):
         message_container.content = None
         if not email.value or not senha.value:
@@ -80,7 +76,7 @@ def login_view(page: ft.Page):
                             ft.Row([
                                 ft.TextButton(
                                     text='Criar Conta',
-                                    on_click=go_to_register
+                                    on_click=lambda _: page.go("/cadastro")
                                 ),
                                 ft.TextButton('Esqueci minha senha')
                             ], width=300, alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
@@ -90,7 +86,10 @@ def login_view(page: ft.Page):
             ], horizontal_alignment='center', alignment='center')
         )
     ])
-    page.add(Login)
-    page.update()
-
-ft.app(target=login_view)
+    return ft.View(
+        "/",
+        [
+            Login,
+        ],
+        horizontal_alignment='center'
+    )
