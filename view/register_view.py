@@ -1,7 +1,7 @@
 import flet as ft
 import requests
-from werkzeug.security import generate_password_hash
-from view import login_view  # Certifique-se de que o login_view está importado corretamente
+#from mysql.connector import Error
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def registerteste_view(page: ft.Page):
     page.clean()
@@ -60,28 +60,21 @@ def registerteste_view(page: ft.Page):
         keyboard_type=ft.KeyboardType.PHONE,
     )
     message_container = ft.Container(alignment=ft.alignment.center)
-
     def cadastrar_click(e):
         message_container.content = None
-        # Verificação de campos vazios
         if not nome.value or not email.value or not senha.value or not senhaconfirm.value or not telefone.value:
             message_container.content= ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
-        # Verificação de senhas correspondentes
-        if senha.value != senhaconfirm.value:
+        if not senha.value == senhaconfirm.value:
             message_container.content= ft.Text("Senhas não conferem.", color="red")
             page.update()
             return
-
-        # Gerar hash da senha para envio seguro
-        hashed_password = generate_password_hash(senha.value)
-
         # Dados a serem enviados
         payload = {
             "nome": nome.value,
             "email": email.value,
-            "senha": hashed_password,  # Enviar a senha com hash
+            "senha": senha.value,
             "telefone": telefone.value
         }
 
@@ -89,16 +82,13 @@ def registerteste_view(page: ft.Page):
         try:
             response = requests.post("http://127.0.0.1:5000/usuario", json=payload)
             if response.status_code == 201:
-                message_container.content = ft.Text("Usuário cadastrado com sucesso!", color="green")
+                message_container.content= ft.Text("Usuário cadastrado com sucesso!", color="green")
             else:
-                message_container.content = ft.Text(f"Erro ao cadastrar usuário: {response.json().get('message')}", color="red")
+                message_container.content= ft.Text(f"Erro ao cadastrar usuário: {response.json().get('message')}", color="red")
         except requests.RequestException as ex:
-            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+            message_container.content= ft.Text(f"Erro de conexão: {ex}", color="red")
 
         page.update()
-
-    def go_to_login(e):
-        login_view(page)  # Certifique-se de que login_view é chamado corretamente
 
     # Layout do formulário
     registerUsr = ft.Column([
@@ -138,7 +128,10 @@ def registerteste_view(page: ft.Page):
                             ),
                             message_container,
                             ft.Row([
-                                ft.TextButton('Já tenho uma conta', on_click=go_to_login),
+                                ft.TextButton(
+                                    text='Já tenho uma conta',
+                                    on_click=lambda _: page.go("/")
+                                ),
                             ], width=300)
                         ], spacing=12, horizontal_alignment='center'),
                     ], horizontal_alignment='center'),
@@ -147,7 +140,10 @@ def registerteste_view(page: ft.Page):
         )
     ])
 
-    page.add(registerUsr)
-    page.update()
-
-ft.app(target=registerteste_view)
+    return ft.View(
+        "/cadastro",
+        [
+            registerUsr,
+        ],
+        horizontal_alignment='center'
+    )
