@@ -20,6 +20,7 @@ def create_usuario_route():
         # Tratamento genérico de erros, pode incluir logs aqui
         return jsonify({"message": f"Erro ao inserir usuário: {str(e)}"}), 500
 
+
 # Rota para obter todos os usuários (GET /usuario)
 @usuario_bp.route('/usuario', methods=['GET'])
 def get_usuarios_route():
