@@ -1,12 +1,11 @@
 import flet as ft
 
 def main(page: ft.Page):
+    
     def show_add_book_dialog(e):
-        # Definindo os TextFields para a entrada do usuário (removido expand=True)
         titulo_livro = ft.TextField(label="Título do Livro", width=400)
         autor_livro = ft.TextField(label="Autor", width=400)
 
-        # Definindo um campo de número para a quantidade e inicializando o valor
         quantidade_de_livros = ft.TextField(
             label="Quantidade", 
             value="1", 
@@ -14,37 +13,31 @@ def main(page: ft.Page):
             text_align=ft.TextAlign.CENTER
         )
 
-        # Função para aumentar a quantidade
         def aumentar_quantidade(e):
             quantidade_de_livros.value = str(int(quantidade_de_livros.value) + 1)
             page.update()
 
-        # Função para diminuir a quantidade
         def diminuir_quantidade(e):
             if int(quantidade_de_livros.value) > 1:
                 quantidade_de_livros.value = str(int(quantidade_de_livros.value) - 1)
                 page.update()
 
-        # Função para fechar o diálogo
         def close_dialog(e):
             page.dialog.open = False
             page.update()
 
-        # Função para salvar os dados do novo livro
         def add_book(e):
             print(f"Título: {titulo_livro.value}, Autor: {autor_livro.value}, Quantidade: {quantidade_de_livros.value}")
             close_dialog(e)
 
-        # Função para simular a escolha de arquivo ou tirar foto
         def tirar_foto(e):
-            print("Tirando uma foto...") 
+            print("Tirando uma foto...")
             page.update()
 
         def escolher_arquivo(e):
             print("Escolhendo arquivo de imagem...") 
             page.update()
 
-        # Criando a caixa de diálogo
         dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("Adicionar Novo Livro"),
@@ -93,7 +86,6 @@ def main(page: ft.Page):
             actions_alignment=ft.MainAxisAlignment.END
         )
 
-        # Mostrando o diálogo
         page.dialog = dialog
         dialog.open = True
         page.update()
@@ -134,7 +126,7 @@ def main(page: ft.Page):
                                 width=300,
                                 on_click=show_add_book_dialog
                             ),
-                            ft.Card(
+                            """ft.Card(
                                 content=ft.Container(
                                     content=ft.Column(
                                         controls=[
@@ -171,7 +163,7 @@ def main(page: ft.Page):
                                 ),
                                 width=800,
                                 elevation=4
-                            )
+                            )"""
                         ],
                         alignment=ft.alignment.top_left,
                         spacing=10
@@ -190,4 +182,4 @@ def main(page: ft.Page):
 
     page.add(t)
 
-ft.app(target=main)
+ft.app(target=main,view=ft.AppView.WEB_BROWSER)

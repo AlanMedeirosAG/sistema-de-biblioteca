@@ -1,4 +1,6 @@
 import flet as ft
+import requests
+
 
 def main(page: ft.Page):
     login_view(page)
@@ -9,18 +11,47 @@ def login_view(page: ft.Page):
     page.vertical_alignment = 'center'
     page.window_maximized = True
 
-    def go_to_register(e):
-        from view import registerteste_view
-        registerteste_view(page)
+    def go_to_register(e: ft.RouteChangeEvent):
+        from view import register_view
+        register_view(page)
     
+
+     # Função para executar o login
     def login_click(e):
         message_container.content = None
+
+        # Verifica se os campos estão preenchidos
         if not email.value or not senha.value:
             message_container.content = ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
-        # verificar_login(email.value, senha.value)
-        return
+
+        # Validação do formato do e-mail
+        if "@" not in email.value or "." not in email.value:
+            message_container.content = ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
+            page.update()
+            return 
+        
+        # Pegando os valores dos campos de texto
+        email_value = email.value
+        senha_value = senha.value
+
+        try:
+            # Fazendo a requisição ao backend Flask
+            response = requests.post("http://127.0.0.1:5000/login", json={"email": email_value, "senha": senha_value})
+
+            # Verificando o status da resposta
+            if response.status_code == 200:
+                message_container.content = ft.Text("Login com sucesso", color="green")
+            else:
+                message_container.content = ft.Text(f"Erro no login: {response.json().get('message')}", color="red")
+
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+
+        page.update()
+
+
     
     message_container = ft.Container(alignment=ft.alignment.center)
 
@@ -90,7 +121,10 @@ def login_view(page: ft.Page):
             ], horizontal_alignment='center', alignment='center')
         )
     ])
+
+    
+
     page.add(Login)
     page.update()
 
-ft.app(target=login_view)
+ft.app(target=login_view,view=ft.AppView.WEB_BROWSER)

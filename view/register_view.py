@@ -1,9 +1,8 @@
 import flet as ft
 import requests
 from werkzeug.security import generate_password_hash
-from view import login_view  # Certifique-se de que o login_view está importado corretamente
 
-def registerteste_view(page: ft.Page):
+def register_view(page: ft.Page):
     page.clean()
     page.horizontal_alignment = 'center'
     page.vertical_alignment = 'center'
@@ -64,7 +63,7 @@ def registerteste_view(page: ft.Page):
     def cadastrar_click(e):
         message_container.content = None
         # Verificação de campos vazios
-        if not nome.value or not email.value or not senha.value or not senhaconfirm.value or not telefone.value:
+        if not nome.value or not email.value or not senha.value or not senhaconfirm.value:
             message_container.content= ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
@@ -73,7 +72,12 @@ def registerteste_view(page: ft.Page):
             message_container.content= ft.Text("Senhas não conferem.", color="red")
             page.update()
             return
-
+        
+        if "@" not in email.value or "." in email:
+            message_container.content= ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
+            page.update()
+            return 
+ 
         # Gerar hash da senha para envio seguro
         hashed_password = generate_password_hash(senha.value)
 
@@ -82,7 +86,6 @@ def registerteste_view(page: ft.Page):
             "nome": nome.value,
             "email": email.value,
             "senha": hashed_password,  # Enviar a senha com hash
-            "telefone": telefone.value
         }
 
         # Enviar dados para o backend Flask
@@ -98,7 +101,8 @@ def registerteste_view(page: ft.Page):
         page.update()
 
     def go_to_login(e):
-        login_view(page)  # Certifique-se de que login_view é chamado corretamente
+        from view import login_view  
+        login_view(page)
 
     # Layout do formulário
     registerUsr = ft.Column([
@@ -150,4 +154,4 @@ def registerteste_view(page: ft.Page):
     page.add(registerUsr)
     page.update()
 
-ft.app(target=registerteste_view)
+ft.app(target=register_view,view=ft.AppView.WEB_BROWSER)
