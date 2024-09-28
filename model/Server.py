@@ -1,8 +1,5 @@
-from flask import Flask, request, jsonify
 import mysql.connector
 from mysql.connector import Error
-
-app = Flask(__name__)
 
 def create_server_connection():
     try:
@@ -47,6 +44,3 @@ def read_query(conexao, query, data=None):
         return None
     finally:
         cursor.close()
-
-if __name__ == '__main__':
-    app.run(debug=True) 
