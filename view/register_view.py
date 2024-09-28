@@ -52,32 +52,44 @@ def register_view(page: ft.Page):
     )
 
     message_container = ft.Container(alignment=ft.alignment.center)
-    def cadastrar_click(e):
+    
+   def cadastrar_click(e):
         message_container.content = None
+        # Verificação de campos vazios
         if not nome.value or not email.value or not senha.value or not senhaconfirm.value:
             message_container.content= ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
-        if not senha.value == senhaconfirm.value:
+        # Verificação de senhas correspondentes
+        if senha.value != senhaconfirm.value:
             message_container.content= ft.Text("Senhas não conferem.", color="red")
             page.update()
             return
+        
+        if "@" not in email.value or "." in email:
+            message_container.content= ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
+            page.update()
+            return 
+ 
+        # Gerar hash da senha para envio seguro
+        hashed_password = generate_password_hash(senha.value)
+
         # Dados a serem enviados
         payload = {
             "nome": nome.value,
             "email": email.value,
-            "senha": senha.value,
+            "senha": hashed_password,  # Enviar a senha com hash
         }
 
         # Enviar dados para o backend Flask
         try:
             response = requests.post("http://127.0.0.1:5000/usuario", json=payload)
             if response.status_code == 201:
-                message_container.content= ft.Text("Usuário cadastrado com sucesso!", color="green")
+                message_container.content = ft.Text("Usuário cadastrado com sucesso!", color="green")
             else:
-                message_container.content= ft.Text(f"Erro ao cadastrar usuário: {response.json().get('message')}", color="red")
+                message_container.content = ft.Text(f"Erro ao cadastrar usuário: {response.json().get('message')}", color="red")
         except requests.RequestException as ex:
-            message_container.content= ft.Text(f"Erro de conexão: {ex}", color="red")
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
 
         page.update()
 
@@ -110,7 +122,6 @@ def register_view(page: ft.Page):
                             email,
                             senha,
                             senhaconfirm,
-                            telefone,
                             ft.ElevatedButton(
                                 on_click=cadastrar_click,
                                 text='Criar conta',
