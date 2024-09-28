@@ -66,7 +66,7 @@ def register_view(page: ft.Page):
             page.update()
             return
         
-        if "@" not in email.value or "." in email.value:
+        if "@" not in email.value or "." not in email.value:
             message_container.content= ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
             page.update()
             return 
