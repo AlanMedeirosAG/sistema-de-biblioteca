@@ -1,8 +1,11 @@
 import flet as ft
 
 def main(page: ft.Page):
+    # Lista para armazenar os livros adicionados
+    livros = []
+
     def show_add_book_dialog(e):
-        # Definindo os TextFields para a entrada do usuário (removido expand=True)
+        # Definindo os TextFields para a entrada do usuário
         titulo_livro = ft.TextField(label="Título do Livro", width=400)
         genero = ft.TextField(label="Gênero", width=400)
         autor_livro = ft.TextField(label="Autor", width=400)
@@ -33,16 +36,24 @@ def main(page: ft.Page):
 
         # Função para salvar os dados do novo livro
         def add_book(e):
-            print(f"Título: {titulo_livro.value}, Autor: {autor_livro.value},Gênero: {genero.value}, Quantidade: {quantidade_de_livros.value}")
+            # Criando um dicionário com as informações do livro
+            novo_livro = {
+                "titulo": titulo_livro.value,
+                "autor": autor_livro.value,
+                "genero": genero.value,
+                "quantidade": quantidade_de_livros.value
+            }
+            livros.append(novo_livro)  # Adiciona o livro à lista
+            atualizar_lista_de_livros()  # Atualiza a interface com a lista atualizada
             close_dialog(e)
 
         # Função para simular a escolha de arquivo ou tirar foto
         def tirar_foto(e):
-            print("Tirando uma foto...") 
+            print("Tirando uma foto...")
             page.update()
 
         def escolher_arquivo(e):
-            print("Escolhendo arquivo de imagem...") 
+            print("Escolhendo arquivo de imagem...")
             page.update()
 
         # Criando a caixa de diálogo
@@ -73,12 +84,12 @@ def main(page: ft.Page):
                     ft.Row(
                         controls=[
                             ft.IconButton(
-                                icon=ft.icons.REMOVE, 
+                                icon=ft.icons.REMOVE,
                                 on_click=diminuir_quantidade
                             ),
                             quantidade_de_livros,
                             ft.IconButton(
-                                icon=ft.icons.ADD, 
+                                icon=ft.icons.ADD,
                                 on_click=aumentar_quantidade
                             )
                         ],
@@ -100,6 +111,52 @@ def main(page: ft.Page):
         dialog.open = True
         page.update()
 
+    # Função para atualizar a exibição da lista de livros na tela
+    def atualizar_lista_de_livros():
+        # Limpa os elementos atuais e insere os livros da lista
+        lista_livros_coluna.controls.clear()
+        for livro in livros:
+            lista_livros_coluna.controls.append(
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column(
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column(
+                                            controls=[
+                                                ft.Text(f"Título: {livro['titulo']}"),
+                                                ft.Text(f"Autor: {livro['autor']}"),
+                                                ft.Text(f"Gênero: {livro['genero']}"),
+                                                ft.Text(f"Quantidade: {livro['quantidade']}"),
+                                            ],
+                                            spacing=5
+                                        ),
+                                    ],
+                                    spacing=10
+                                ),
+                                ft.Row(
+                                    controls=[
+                                        ft.TextButton(text='Editar Detalhes'),
+                                        ft.TextButton(text='Adicionar mais unidades ao catálogo'),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.END,
+                                    spacing=10
+                                )
+                            ],
+                            spacing=10
+                        ),
+                        padding=ft.padding.all(10),
+                    ),
+                    width=800,
+                    elevation=4
+                )
+            )
+        page.update()
+
+    # Coluna para listar os livros
+    lista_livros_coluna = ft.Column()
+
     t = ft.Tabs(
         selected_index=1,
         animation_duration=300,
@@ -112,7 +169,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 controls=[
                                     ft.TextField(
-                                        label="Buscar no estoque", 
+                                        label="Buscar no estoque",
                                         expand=True
                                     ),
                                     ft.IconButton(
@@ -129,40 +186,7 @@ def main(page: ft.Page):
                                 width=300,
                                 on_click=show_add_book_dialog
                             ),
-                            ft.Card(
-                                content=ft.Container(
-                                    content=ft.Column(
-                                        controls=[
-                                            ft.Row(
-                                                controls=[
-                                                    ft.Column(
-                                                        controls=[
-                                                            ft.Text("As crônicas de Gelo e Fogo"),
-                                                            ft.Text("Autor: George R.R. Martin"),
-                                                            ft.Text("Gênero: Fantasia épica"),
-                                                            ft.Text("Quantidade: 300"),
-                                                        ],
-                                                        spacing=5
-                                                    ),
-                                                ],
-                                                spacing=10
-                                            ),
-                                            ft.Row(
-                                                controls=[
-                                                    ft.TextButton(text='Editar Detalhes'),
-                                                    ft.TextButton(text='Adicionar mais unidades ao catálogo'),
-                                                ],
-                                                alignment=ft.MainAxisAlignment.END,
-                                                spacing=10
-                                            )
-                                        ],
-                                        spacing=10
-                                    ),
-                                    padding=ft.padding.all(10),
-                                ),
-                                width=800,
-                                elevation=4
-                            )
+                            lista_livros_coluna  # Exibe a lista de livros aqui
                         ],
                         alignment=ft.alignment.top_left,
                         spacing=10
@@ -172,7 +196,7 @@ def main(page: ft.Page):
                 ),
                 icon=ft.icons.BOOK
             ),
-            ft.Tab(
+           ft.Tab(
                 text="Histórico de Empréstimos",
                 content=ft.Container(
                     content=ft.Column(
