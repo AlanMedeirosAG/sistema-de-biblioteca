@@ -1,8 +1,11 @@
 import flet as ft
+import requests 
 
 def main(page: ft.Page):
     # Lista para armazenar os livros adicionados
     livros = []
+    
+    message_container = ft.Container()
 
     def show_add_book_dialog(e):
         # Definindo os TextFields para a entrada do usuário
@@ -36,6 +39,8 @@ def main(page: ft.Page):
 
         # Função para salvar os dados do novo livro
         def add_book(e):
+            message_container.content = None
+
             # Criando um dicionário com as informações do livro
             novo_livro = {
                 "titulo": titulo_livro.value,
@@ -45,6 +50,25 @@ def main(page: ft.Page):
             }
             livros.append(novo_livro)  # Adiciona o livro à lista
             atualizar_lista_de_livros()  # Atualiza a interface com a lista atualizada
+
+        titulo_livro = titulo_livro.value
+        autor_livro = autor_livro.value
+        genero = genero.value
+
+        try:
+            # Fazendo a requisição ao backend Flask
+            response = requests.post("http://127.0.0.1:5000/livro", json={"titulo": titulo_livro, "autor": autor_livro,"genero":genero})
+
+            # Verificando o status da resposta
+            if response.status_code == 200:
+                message_container.content = ft.Text("Livro adicionado com sucesso", color="green")
+            else:
+                message_container.content = ft.Text(f"Erro ao adicionar livro: {response.json().get('message')}", color="red")
+
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+
+
             close_dialog(e)
 
         # Função para simular a escolha de arquivo ou tirar foto
@@ -343,5 +367,7 @@ def main(page: ft.Page):
     )
 
     page.add(t)
+
+ft.app(target=main)
 
 ft.app(target=main)
