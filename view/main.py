@@ -3,6 +3,7 @@ from login_view import login_view
 from register_view import register_view
 from login_bibliotecario import login_bibliotecario_view
 from tela_principal_bibliotecario_view import tela_principal_bibliotecario_view
+from tela_principal_usuario import tela_principal_usuario_view
 
 
 def main(page: ft.Page):
@@ -21,6 +22,9 @@ def main(page: ft.Page):
             page.views.append(login_bibliotecario_view(page))
 
         if page.route == "/tela_principal_bibliotecario":
+            page.views.append(tela_principal_bibliotecario_view(page))
+        
+        if page.route == "/tela_principal_usuario":
             page.views.append(tela_principal_bibliotecario_view(page))
 
         page.update()
