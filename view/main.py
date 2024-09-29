@@ -1,7 +1,9 @@
 import flet as ft
 from login_view import login_view
-from register_view import registerteste_view
-from login_adm import loginAdm_view
+from register_view import register_view
+from login_bibliotecario import login_bibliotecario_view
+from tela_principal_bibliotecario_view import tela_principal_bibliotecario_view
+
 
 def main(page: ft.Page):
     page.title = "Login"
@@ -13,10 +15,13 @@ def main(page: ft.Page):
             page.views.append(login_view(page))
 
         if page.route == "/cadastro":
-            page.views.append(registerteste_view(page))
+            page.views.append(register_view(page))
 
         if page.route == "/loginadm":
-            page.views.append(loginAdm_view(page))
+            page.views.append(login_bibliotecario_view(page))
+
+        if page.route == "/tela_principal_bibliotecario":
+            page.views.append(tela_principal_bibliotecario_view(page))
 
         page.update()
 
