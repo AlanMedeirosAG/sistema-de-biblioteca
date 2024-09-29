@@ -1,6 +1,14 @@
 import flet as ft
 
 def main(page: ft.Page):
+    tela_principal_usuario_view(page)
+    
+def tela_principal_usuario_view(page: ft.Page):
+    page.title = 'Principal Usuário'
+    page.clean()
+    page.horizontal_alignment = 'center'
+    page.vertical_alignment = 'center'
+    page.window_maximized = True
     def show_search_dialog(e):
         search_field = ft.TextField(label="Buscar Livros", expand=True)
         
@@ -28,7 +36,7 @@ def main(page: ft.Page):
         dialog.open = True
         page.update()
 
-    t = ft.Tabs(
+    tela_principal_usuario = ft.Tabs(
         selected_index=0,
         animation_duration=300,
         tabs=[
@@ -229,6 +237,12 @@ def main(page: ft.Page):
         expand=1
     )
 
-    page.add(t)
+    page.add(tela_principal_usuario)
 
-ft.app(target=main)
+    return ft.View(
+        "/tela_principal_usuario",
+        [
+            tela_principal_usuario,
+        ],
+        horizontal_alignment='center'
+    )
