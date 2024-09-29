@@ -34,8 +34,8 @@ def main(page: ft.Page):
 
         # Função para fechar o diálogo
         def close_dialog(e):
-            page.dialog.open = False
-            page.update()
+         page.dialog.open = False
+         page.update()
 
         # Função para salvar os dados do novo livro
         def add_book(e):
@@ -51,26 +51,22 @@ def main(page: ft.Page):
             livros.append(novo_livro)  # Adiciona o livro à lista
             atualizar_lista_de_livros()  # Atualiza a interface com a lista atualizada
 
-        titulo_livro = titulo_livro.value
-        autor_livro = autor_livro.value
-        genero = genero.value
+            try:
+                # Fazendo a requisição ao backend Flask
+                response = requests.post("http://127.0.0.1:5000/livro", json=novo_livro)
 
-        try:
-            # Fazendo a requisição ao backend Flask
-            response = requests.post("http://127.0.0.1:5000/livro", json={"titulo": titulo_livro, "autor": autor_livro,"genero":genero})
+                # Verificando o status da resposta
+                if response.status_code == 200:
+                    message_container.content = ft.Text("Livro adicionado com sucesso", color="green")
+                else:
+                    message_container.content = ft.Text(f"Erro ao adicionar livro: {response.json().get('message')}", color="red")
 
-            # Verificando o status da resposta
-            if response.status_code == 200:
-                message_container.content = ft.Text("Livro adicionado com sucesso", color="green")
-            else:
-                message_container.content = ft.Text(f"Erro ao adicionar livro: {response.json().get('message')}", color="red")
-
-        except requests.RequestException as ex:
-            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
-
+            except requests.RequestException as ex:
+                message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
 
             close_dialog(e)
 
+        # Função para simular a escolha de arquivo ou tirar foto
         # Função para simular a escolha de arquivo ou tirar foto
         def tirar_foto(e):
             print("Tirando uma foto...")
@@ -128,18 +124,18 @@ def main(page: ft.Page):
                 ft.TextButton("Adicionar", on_click=add_book),
             ],
             actions_alignment=ft.MainAxisAlignment.END
-        )
-
-        # Mostrando o diálogo
+          )
+ 
+         # Mostrando o diálogo
         page.dialog = dialog
         dialog.open = True
         page.update()
 
     # Função para atualizar a exibição da lista de livros na tela
-    def atualizar_lista_de_livros():
+        def atualizar_lista_de_livros():
         # Limpa os elementos atuais e insere os livros da lista
-        lista_livros_coluna.controls.clear()
-        for livro in livros:
+         lista_livros_coluna.controls.clear()
+         for livro in livros:
             lista_livros_coluna.controls.append(
                 ft.Card(
                     content=ft.Container(
@@ -367,7 +363,5 @@ def main(page: ft.Page):
     )
 
     page.add(t)
-
-ft.app(target=main)
 
 ft.app(target=main)
