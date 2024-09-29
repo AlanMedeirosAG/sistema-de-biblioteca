@@ -2,10 +2,10 @@ from mysql.connector import Error
 from .Server import create_server_connection, execute_query, read_query
 
 def create_livro(data):
-    query = "INSERT INTO livro (titulo, autor, ano_publicacao, isbn) VALUES (%s, %s, %s, %s)"
+    query = "INSERT INTO livro (titulo, autor, ano_lancamento, isbn,genero) VALUES (%s, %s, %s, %s, %s)"
     conexao = create_server_connection()
     if conexao:
-        execute_query(conexao, query, (data['titulo'], data['autor'], data.get('ano_publicacao'), data.get('isbn')))
+        execute_query(conexao, query, (data['titulo'], data['autor'],data['genero'],data.get('ano_lancamento'), data.get('isbn')))
         conexao.close()
 
 def get_livros():
