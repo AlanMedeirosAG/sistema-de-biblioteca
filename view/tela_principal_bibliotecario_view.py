@@ -2,6 +2,15 @@ import flet as ft
 import requests 
 
 def main(page: ft.Page):
+    tela_principal_bibliotecario_view(page)
+    
+def tela_principal_bibliotecario_view(page: ft.Page):
+    page.title = 'Principal Bibliotecario'
+    page.clean()
+    page.horizontal_alignment = 'center'
+    page.vertical_alignment = 'center'
+    page.window_maximized = True
+
     # Lista para armazenar os livros adicionados
     livros = []
     
@@ -212,7 +221,7 @@ def main(page: ft.Page):
     # Coluna para listar os livros
     lista_livros_coluna = ft.Column()
 
-    t = ft.Tabs(
+    tela_principal_bibliotecario = ft.Tabs(
         selected_index=1,
         animation_duration=300,
         tabs=[
@@ -397,8 +406,14 @@ def main(page: ft.Page):
         expand=1
     )
 
-    page.add(t)
+    page.add(tela_principal_bibliotecario)
     carregar_livros() #carrega os livros ao iniciar a tela
     page.update()
 
-ft.app(target=main)
+    return ft.View(
+        "/tela_principal_bibliotecario",
+        [
+            tela_principal_bibliotecario,
+        ],
+        horizontal_alignment='center'
+    )
