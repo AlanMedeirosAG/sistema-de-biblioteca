@@ -16,6 +16,26 @@ def get_bibliotecarios():
         resultado = read_query(conexao, query)
         conexao.close()
 
+def get_bibliotecario_login(email, senha):
+    query = "SELECT * FROM bibliotecario WHERE email = %s"
+    conexao = create_server_connection()
+    
+    if conexao:
+        resultado = read_query(conexao, query, (email,))
+        conexao.close()
+
+        if resultado:  
+            usuario = resultado[0] 
+            if check_password_hash(usuario[3],senha):  
+                return usuario 
+            else:
+                print("Senha incorreta")
+                return None  
+        else:
+            print("Email incorreta")
+            return None 
+
+
 def update_bibliotecario(id,data):
     query = "UPDATE bibliotecario SET nome = %s, email = %s, senha = %s WHERE id = %s"
     conexao = create_server_connection()
