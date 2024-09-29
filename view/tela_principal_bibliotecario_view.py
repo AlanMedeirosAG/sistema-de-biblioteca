@@ -5,7 +5,81 @@ def main(page: ft.Page):
     # Lista para armazenar os livros adicionados
     livros = []
     
-    message_container = ft.Container()
+    message_container = ft.Container(content=ft.Text("Aguardando ação..."))
+
+     # Função para buscar os livros do banco de dados
+    def carregar_livros():
+        try:
+            # Fazendo a requisição ao backend Flask para buscar os livros
+            response = requests.get("http://127.0.0.1:5000/livro")
+            if response.status_code == 200:
+                
+                livros_backend = response.json()  # Obtém a lista de livros
+
+                if isinstance(livros_backend, list):  # Verifica se é uma lista
+                    for livro in livros_backend:
+                        livro_dict = {
+                            "id": livro[0],         
+                            "titulo": livro[1], 
+                            "autor": livro[2],     
+                            "isbn": livro[3],
+                            "genero": livro[4],     
+                            "quantidade": livro[5] 
+                        }
+
+                        livros.append(livro_dict)  # Adiciona o dicionário à lista de livros    
+                    atualizar_lista_de_livros()  # Atualiza a interface com os livros obtidos
+                else:
+                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
+            else:
+                message_container.content = ft.Text(f"Erro ao carregar livros: {response.json().get('message')}", color="red")
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+        page.update()
+
+        # Função para atualizar a exibição da lista de livros na tela
+    def atualizar_lista_de_livros():
+        # Limpa os elementos atuais e insere os livros da lista
+        lista_livros_coluna.controls.clear()
+        for livro in livros:
+            lista_livros_coluna.controls.append(
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column(
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column(
+                                            controls=[
+                                                ft.Text(f"Título: {livro['titulo']}"),
+                                                ft.Text(f"Autor: {livro['autor']}"),
+                                                ft.Text(f"Gênero: {livro['genero']}"),
+                                                ft.Text(f"isbn: {livro['isbn']}"),
+                                                ft.Text(f"Quantidade: {livro['quantidade']}"),
+                                            ],
+                                            spacing=5
+                                        ),
+                                    ],
+                                    spacing=10
+                                ),
+                                ft.Row(
+                                    controls=[
+                                        ft.TextButton(text='Editar Detalhes'),
+                                        ft.TextButton(text='Adicionar mais unidades ao catálogo'),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.END,
+                                    spacing=10
+                                )
+                            ],
+                            spacing=10
+                        ),
+                        padding=ft.padding.all(10),
+                    ),
+                    width=800,
+                    elevation=4
+                )
+            )
+        page.update()
 
     def show_add_book_dialog(e):
         # Definindo os TextFields para a entrada do usuário
@@ -134,49 +208,6 @@ def main(page: ft.Page):
         dialog.open = True
         page.update()
 
-    # Função para atualizar a exibição da lista de livros na tela
-        def atualizar_lista_de_livros():
-        # Limpa os elementos atuais e insere os livros da lista
-         lista_livros_coluna.controls.clear()
-         for livro in livros:
-            lista_livros_coluna.controls.append(
-                ft.Card(
-                    content=ft.Container(
-                        content=ft.Column(
-                            controls=[
-                                ft.Row(
-                                    controls=[
-                                        ft.Column(
-                                            controls=[
-                                                ft.Text(f"Título: {livro['titulo']}"),
-                                                ft.Text(f"Autor: {livro['autor']}"),
-                                                ft.Text(f"Gênero: {livro['genero']}"),
-                                                ft.Text(f"isbn: {livro['isbn']}"),
-                                                ft.Text(f"Quantidade: {livro['quantidade']}"),
-                                            ],
-                                            spacing=5
-                                        ),
-                                    ],
-                                    spacing=10
-                                ),
-                                ft.Row(
-                                    controls=[
-                                        ft.TextButton(text='Editar Detalhes'),
-                                        ft.TextButton(text='Adicionar mais unidades ao catálogo'),
-                                    ],
-                                    alignment=ft.MainAxisAlignment.END,
-                                    spacing=10
-                                )
-                            ],
-                            spacing=10
-                        ),
-                        padding=ft.padding.all(10),
-                    ),
-                    width=800,
-                    elevation=4
-                )
-            )
-        page.update()
 
     # Coluna para listar os livros
     lista_livros_coluna = ft.Column()
@@ -367,5 +398,7 @@ def main(page: ft.Page):
     )
 
     page.add(t)
+    carregar_livros() #carrega os livros ao iniciar a tela
+    page.update()
 
 ft.app(target=main)
