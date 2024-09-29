@@ -12,6 +12,7 @@ def main(page: ft.Page):
         titulo_livro = ft.TextField(label="Título do Livro", width=400)
         genero = ft.TextField(label="Gênero", width=400)
         autor_livro = ft.TextField(label="Autor", width=400)
+        isbn = ft.TextField(label="isbn",width=400)
 
         # Definindo um campo de número para a quantidade e inicializando o valor
         quantidade_de_livros = ft.TextField(
@@ -46,7 +47,8 @@ def main(page: ft.Page):
                 "titulo": titulo_livro.value,
                 "autor": autor_livro.value,
                 "genero": genero.value,
-                "quantidade": quantidade_de_livros.value
+                "quantidade": quantidade_de_livros.value,
+                "isbn":isbn.value
             }
             livros.append(novo_livro)  # Adiciona o livro à lista
             atualizar_lista_de_livros()  # Atualiza a interface com a lista atualizada
@@ -101,6 +103,7 @@ def main(page: ft.Page):
                     titulo_livro,
                     genero,
                     autor_livro,
+                    isbn,
                     ft.Row(
                         controls=[
                             ft.IconButton(
@@ -148,6 +151,7 @@ def main(page: ft.Page):
                                                 ft.Text(f"Título: {livro['titulo']}"),
                                                 ft.Text(f"Autor: {livro['autor']}"),
                                                 ft.Text(f"Gênero: {livro['genero']}"),
+                                                ft.Text(f"isbn: {livro['isbn']}"),
                                                 ft.Text(f"Quantidade: {livro['quantidade']}"),
                                             ],
                                             spacing=5
