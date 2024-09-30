@@ -15,29 +15,36 @@ def login_view(page: ft.Page):
     def login_click(e):
         message_container.content = None
 
-        # Verifica se os campos estão preenchidos
+    # Verifica se os campos estão preenchidos
         if not email.value or not senha.value:
             message_container.content = ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
 
-        # Validação do formato do e-mail
+    # Validação do formato do e-mail
         if "@" not in email.value or "." not in email.value:
             message_container.content = ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
             page.update()
             return 
-        
-        # Pegando os valores dos campos de texto
+
+    # Pegando os valores dos campos de texto
         email_value = email.value
         senha_value = senha.value
 
         try:
-            # Fazendo a requisição ao backend Flask
+        # Fazendo a requisição ao backend Flask
             response = requests.post("http://127.0.0.1:5000/login", json={"email": email_value, "senha": senha_value})
 
-            # Verificando o status da resposta
+        # Verificando o status da resposta
             if response.status_code == 200:
-                message_container.content = ft.Text("Login com sucesso", color="green")
+            # Extraindo o tipo de usuário da resposta
+                user_type = response.json().get('usuario').get('tipo')
+
+                if user_type == 'usuario':
+                    message_container.content = ft.Text("Login com sucesso como Usuário", color="green")
+                    page.go("/tela_principal_usuario")
+                else:
+                    message_container.content = ft.Text("Não é usuário.", color="red")
             else:
                 message_container.content = ft.Text(f"Erro no login: {response.json().get('message')}", color="red")
 
@@ -45,6 +52,7 @@ def login_view(page: ft.Page):
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
 
         page.update()
+
     
     message_container = ft.Container(alignment=ft.alignment.center)
 
@@ -110,16 +118,18 @@ def login_view(page: ft.Page):
                             ], width=300, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                             ft.Container(
                                 content=ft.TextButton(
-                                    text='Sou Administrador',
-                                    on_click=lambda _: page.go("/loginadm")
+                                    text='Sou bibliotecário',
+                                    on_click=lambda _: page.go("/login_bibliotecario")
                                 ), 
-                            margin=30, alignment=ft.alignment.bottom_right),
+                                margin=30, alignment=ft.alignment.bottom_right
+                            ),
                         ], spacing=12, horizontal_alignment='center'),
                     ], horizontal_alignment='center')
                 )
             ], horizontal_alignment='center', alignment='center')
         )
     ])
+    
     return ft.View(
         "/",
         [
