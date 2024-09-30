@@ -2,10 +2,10 @@ import flet as ft
 import requests 
 
 def main(page: ft.Page):
-    loginAdm_view(page)
+    login_bibliotecario_view(page)
 
-def loginAdm_view(page: ft.Page):
-    page.title = 'Login Administrador'
+def login_bibliotecario_view(page: ft.Page):
+    page.title = 'Login Bibliotecario'
     page.clean()
     page.horizontal_alignment = 'center'
     page.vertical_alignment = 'center'
@@ -37,9 +37,14 @@ def loginAdm_view(page: ft.Page):
 
             # Verificando o status da resposta
             if response.status_code == 200:
-                message_container.content = ft.Text("Login com sucesso", color="green")
-            else:
-                message_container.content = ft.Text(f"Erro no login: {response.json().get('message')}", color="red")
+                # Extraindo o tipo de usuário da resposta
+                user_type = response.json().get('usuario').get('tipo')
+
+                if user_type == 'bibliotecario':
+                    message_container.content = ft.Text("Login com sucesso como bibliotecario", color="green")
+                    page.go("/tela_principal_bibliotecario")
+                else:
+                    message_container.content = ft.Text("Não é bibliotecario.", color="red")
 
         except requests.RequestException as ex:
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
@@ -83,13 +88,7 @@ def loginAdm_view(page: ft.Page):
                     content=ft.Column([
                         ft.Container(
                             padding=ft.padding.only(top=10, bottom=12),
-                            content=ft.Column([
-                                ft.Text(
-                                    value='Login Administrador',
-                                    weight='bold',
-                                    size=20
-                                )
-                            ])
+                            content=ft.Column([ft.Text(value='Login bibliotecário', weight='bold', size=20)])
                         ),
                         ft.Column([
                             email,
@@ -99,7 +98,7 @@ def loginAdm_view(page: ft.Page):
                                 text='Entrar',
                                 width=300,
                                 height=40,
-                                on_click=login_click
+                                on_click=login_click  # Chama a função de login aqui
                             ),
                             ft.Row([
                                 ft.TextButton(
@@ -111,19 +110,19 @@ def loginAdm_view(page: ft.Page):
                             ft.Container(
                                 content=ft.TextButton(
                                     text='Sou Usuário',
-                                    on_click=lambda _: page.go("/")
+                                    on_click=lambda _: page.go("/"),
                                 ), 
-                            margin=30, alignment=ft.alignment.bottom_right),
+                                margin=30, alignment=ft.alignment.bottom_right
+                            ),
                         ], spacing=12, horizontal_alignment='center'),
                     ], horizontal_alignment='center')
                 )
             ], horizontal_alignment='center', alignment='center')
         )
     ])
+    
     return ft.View(
-        "/loginadm",
-        [
-            Login,
-        ],
+        "/login_bibliotecario",
+        [Login],
         horizontal_alignment='center'
     )
