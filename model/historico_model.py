@@ -16,6 +16,7 @@ def get_historico():
     if conexao:
         resultado = read_query(conexao, query)
         conexao.close()
+        return resultado
 
 def update_historico(id,data):
     query = "UPDATE historico SET usuario_id = %s, livro_id = %s, data_emprestimo = %s, data_devolucao = %s WHERE id = %s"
