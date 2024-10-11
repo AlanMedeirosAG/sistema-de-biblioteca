@@ -1,12 +1,33 @@
 from mysql.connector import Error
+from werkzeug.security import check_password_hash
 from .Server import create_server_connection, execute_query, read_query
 
 def create_bibliotecario(data):
-    query = "INSERT INTO bibliotecario (nome, email, senha) VALUES (%s, %s, %s)"
+    # Inserir o novo usuário na tabela 'usuario'
+    query_usuario = "INSERT INTO usuario (nome, email, senha) VALUES (%s, %s, %s)"
     conexao = create_server_connection()
-    if conexao:
-        execute_query(conexao, query, (data['nome'], data['email'], data['senha']))
-        conexao.close()
+    
+    try:
+        if conexao:
+            # Inserir o usuário
+            execute_query(conexao, query_usuario, (data['nome'], data['email'],(data['senha'])))
+            
+            # Obter o id do usuário recém-inserido
+            query_id = "SELECT LAST_INSERT_ID()"
+            cursor = conexao.cursor()
+            cursor.execute(query_id)
+            idusuario = cursor.fetchone()[0]  # Pega o primeiro valor da tupla retornada
+            
+            # Inserir o bibliotecário na tabela 'bibliotecario'
+            query_bibliotecario = "INSERT INTO bibliotecario (idusuario) VALUES (%s)"
+            execute_query(conexao, query_bibliotecario, (idusuario,))
+            
+    except Exception as e:
+        print(f"Erro ao inserir bibliotecário: {str(e)}")
+    
+    finally:
+        if conexao:
+            conexao.close()
        
 
 def get_bibliotecarios():
@@ -17,7 +38,12 @@ def get_bibliotecarios():
         conexao.close()
 
 def get_bibliotecario_login(email, senha):
-    query = "SELECT * FROM bibliotecario WHERE email = %s"
+    query = """
+    SELECT u.id, u.email, u.senha  -- Pegamos apenas o necessário (id, email, senha)
+    FROM usuario u
+    INNER JOIN bibliotecario b ON u.id = b.idusuario
+    WHERE u.email = %s
+    """
     conexao = create_server_connection()
     
     if conexao:
@@ -34,7 +60,6 @@ def get_bibliotecario_login(email, senha):
         else:
             print("Email incorreta")
             return None 
-
 
 def update_bibliotecario(id,data):
     query = "UPDATE bibliotecario SET nome = %s, email = %s, senha = %s WHERE id = %s"
