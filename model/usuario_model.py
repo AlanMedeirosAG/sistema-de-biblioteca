@@ -1,22 +1,18 @@
 from mysql.connector import Error
+from werkzeug.security import check_password_hash
 from .Server import create_server_connection, execute_query, read_query
 
 # Criação de usuário
 def create_usuario(data):
-    query = "INSERT INTO usuario (nome, email, senha) VALUES (%s, %s, %s)"
-    conexao = None
+    query = "INSERT INTO usuario (nome, email, senha, tipo_usuario) VALUES (%s, %s, %s, %s)"
+    conexao = create_server_connection()
     
     try:
-        conexao = create_server_connection()
         if conexao:
-            execute_query(conexao, query, (data['nome'], data['email'],data['senha']))
-
-    except Error as e:
-        print(f"Erro ao criar o usuário: {e}")
-        return {"message": f"Erro ao criar o usuário: {str(e)}"}, 500
-        
+            execute_query(conexao, query, (data['nome'], data['email'],(data['senha']), data['tipo_usuario']))
+    except Exception as e:
+        print(f"Erro ao inserir usuário: {str(e)}")
     finally:
-        # Garante que a conexão será fechada
         if conexao:
             conexao.close()
 
@@ -40,14 +36,19 @@ def get_usuario_login(email, senha):
 
         if resultado:  
             usuario = resultado[0] 
-            if check_password_hash(usuario[3],senha):  
-                return usuario 
+            if check_password_hash(usuario[3], senha):  
+                return {
+                    "id": usuario[0],
+                    "nome": usuario[1]   ,      
+                    "email": usuario[2],       
+                    "tipo": usuario[4]         
+                }
             else:
                 print("Senha incorreta")
                 return None  
         else:
-            print("Email incorreta")
-            return None    
+            print("E-mail incorreto")
+            return None 
 
 # Atualizar usuário
 def update_usuario(id, data):
