@@ -16,7 +16,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
     
     message_container = ft.Container(content=ft.Text("Aguardando ação..."))
 
-     # Função para buscar os livros do banco de dados
+    # Função para buscar os livros do banco de dados
     def carregar_livros():
         try:
             # Fazendo a requisição ao backend Flask para buscar os livros
@@ -25,15 +25,16 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                 
                 livros_backend = response.json()  # Obtém a lista de livros
 
-                if isinstance(livros_backend, list):  # Verifica se é uma lista
+                if isinstance(livros_backend, list): # Verifica se é uma lista
+                    livros.clear()
                     for livro in livros_backend:
                         livro_dict = {
-                            "id": livro[0],         
+                            "idlivro": livro[0],         
                             "titulo": livro[1], 
                             "autor": livro[2],     
                             "isbn": livro[3],
                             "genero": livro[4],     
-                            "quantidade": livro[5] 
+                            "quantidade": livro[6] 
                         }
 
                         livros.append(livro_dict)  # Adiciona o dicionário à lista de livros    
@@ -46,10 +47,26 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
 
-        # Função para atualizar a exibição da lista de livros na tela
+
+    def excluirLivro(id):
+        try:
+            # Fazendo a requisição ao backend Flask para apagar livro
+            response = requests.delete(f"http://127.0.0.1:5000/livro/{id}")
+            if response.status_code == 200:
+                    message_container.content = ft.Text("Livro excluído com sucesso!", color="green")
+                    carregar_livros()
+                    atualizar_lista_de_livros()
+            else:
+                message_container.content = ft.Text(f"Erro ao excluir livro: {response.json().get('message')}", color="red")
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+        page.update()
+
+    # Função para atualizar a exibição da lista de livros na tela
     def atualizar_lista_de_livros():
-        # Limpa os elementos atuais e insere os livros da lista
+    # Limpa os elementos atuais e insere os livros da lista
         lista_livros_coluna.controls.clear()
+
         for livro in livros:
             lista_livros_coluna.controls.append(
                 ft.Card(
@@ -63,19 +80,19 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                                 ft.Text(f"Título: {livro['titulo']}"),
                                                 ft.Text(f"Autor: {livro['autor']}"),
                                                 ft.Text(f"Gênero: {livro['genero']}"),
-                                                ft.Text(f"isbn: {livro['isbn']}"),
+                                                ft.Text(f"ISBN: {livro['isbn']}"),
+                                                ft.Text(f"ID: {livro['idlivro']}"),
                                                 ft.Text(f"Quantidade: {livro['quantidade']}"),
                                             ],
                                             spacing=5
                                         ),
                                     ],
-                                    spacing=10
+                                    spacing=10 
                                 ),
                                 ft.Row(
                                     controls=[
                                         ft.TextButton(text='Editar Detalhes'),
-                                        ft.TextButton(text='Adicionar mais unidades ao catálogo'),
-                                    ],
+                                        ft.TextButton(text='Excluir livro',on_click=lambda e, livro_id=livro['idlivro']: excluirLivro(livro_id))                                    ],
                                     alignment=ft.MainAxisAlignment.END,
                                     spacing=10
                                 )
@@ -88,6 +105,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                     elevation=4
                 )
             )
+    
         page.update()
 
     def show_add_book_dialog(e):
@@ -133,15 +151,24 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                 "quantidade": quantidade_de_livros.value,
                 "isbn":isbn.value
             }
-            livros.append(novo_livro)  # Adiciona o livro à lista
-            atualizar_lista_de_livros()  # Atualiza a interface com a lista atualizada
+
+            if not all(novo_livro.values()):
+                message_container.content = ft.Text("Por favor, preencha todos os campos obrigatórios.", color="red")
+                page.update()
+                return
 
             try:
                 # Fazendo a requisição ao backend Flask
                 response = requests.post("http://127.0.0.1:5000/livro", json=novo_livro)
 
                 # Verificando o status da resposta
-                if response.status_code == 200:
+                if response.status_code == 201:
+                    idlivro = response.json().get('idlivro')  # Obtém o ID do livro retornado
+                    novo_livro['idlivro'] = idlivro  # Adiciona o ID ao dicionário
+                    livros.append(novo_livro)  # Adiciona o livro à lista
+                    atualizar_lista_de_livros()# Atualiza a interface com a lista atualizada
+                    carregar_livros()
+
                     message_container.content = ft.Text("Livro adicionado com sucesso", color="green")
                 else:
                     message_container.content = ft.Text(f"Erro ao adicionar livro: {response.json().get('message')}", color="red")
@@ -151,7 +178,6 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
             close_dialog(e)
 
-        # Função para simular a escolha de arquivo ou tirar foto
         # Função para simular a escolha de arquivo ou tirar foto
         def tirar_foto(e):
             print("Tirando uma foto...")
@@ -183,6 +209,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                         ],
                         spacing=10
                     ),
+
                     titulo_livro,
                     genero,
                     autor_livro,
@@ -220,6 +247,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Coluna para listar os livros
     lista_livros_coluna = ft.Column()
+    lista_usuarios_coluna = ft.Column()
 
     tela_principal_bibliotecario = ft.Tabs(
         selected_index=1,
