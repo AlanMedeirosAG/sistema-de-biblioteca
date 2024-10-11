@@ -9,15 +9,15 @@ def create_usuario_route():
     try:
         data = request.json
         # Validação dos dados
-        if not data or 'nome' not in data or 'email' not in data or 'senha' not in data:
-            return jsonify({"message": "Campos 'nome', 'email' e 'senha' são obrigatórios."}), 400
+        if not data or 'nome' not in data or 'email' not in data or 'senha' not in data or 'tipo_usuario' not in data:
+            return jsonify({"message": "Campos 'nome', 'email', 'senha' e 'tipo_usuario' são obrigatórios."}), 400
 
-        create_usuario(data)  # Assumindo que sua função já faz as verificações necessárias
-        # Retorno de sucesso
+        # Chame uma função única que insere no banco de dados
+        create_usuario(data)  
+        
         return jsonify({"message": "Usuário inserido com sucesso!"}), 201
     
     except Exception as e:
-        # Tratamento genérico de erros, pode incluir logs aqui
         return jsonify({"message": f"Erro ao inserir usuário: {str(e)}"}), 500
 
 
@@ -37,7 +37,13 @@ def get_usuario_login_route():
     usuario = get_usuario_login(email, senha)
     
     if usuario:
-        return jsonify({"message": "Login bem-sucedido!", "usuario": usuario}), 200
+        return jsonify({
+            "message": "Login bem-sucedido!",
+            "usuario": {
+                "email": usuario['email'],
+                "tipo": usuario['tipo']  
+            }
+        }), 200
     else:
         return jsonify({"message": "E-mail ou senha incorretos!"}), 401
 
