@@ -25,6 +25,20 @@ def get_usuarios():
         conexao.close()
         return resultado
 
+def pesquisaUsuario(email=None, nome=None):
+    query = "SELECT * FROM usuario WHERE "
+    
+    # Verifica se foi passado o email ou o nome
+    if email:
+        query += "email = %s"
+        valores = (email,)
+    elif nome:
+        query += "nome LIKE %s"
+        valores = ('%' + nome + '%',)  # Faz uma busca parcial no nome
+    else:
+        print("Erro: É necessário informar um e-mail ou nome para a pesquisa.")
+        return None
+
 # Buscar login de usuário
 def get_usuario_login(email, senha):
     query = "SELECT * FROM usuario WHERE email = %s"
