@@ -27,6 +27,18 @@ def get_usuarios_route():
     usuarios = get_usuarios()
     return jsonify(usuarios), 200
 
+@usuario_bp.route('/usuario', methods=['GET'])
+def get_pesquisa_usuario():
+
+    email = request.args.get('email')
+    nome = request.args.get('nome')
+    resultado = pesquisaUsuario(email=email,nome=nome)
+
+    if resultado:
+        return jsonify(resultado), 200
+    else:
+        return jsonify({"mensagem": "Usuário não encontrado"}), 404
+
 # Rota para login de usuário (POST /login)
 @usuario_bp.route('/login', methods=['POST'])
 def get_usuario_login_route():
