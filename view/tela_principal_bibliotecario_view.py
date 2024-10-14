@@ -13,6 +13,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Lista para armazenar os livros adicionados
     livros = []
+    #usuarios = []
     
     message_container = ft.Container(content=ft.Text("Aguardando ação..."))
 
@@ -62,6 +63,72 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
 
+
+    def pesquisaLivro(id=None,titulo=None):
+        try:
+            if id:
+                response = requests.get(f"http://127.0.0.1:5000/livro?idlivro={id}")
+            elif titulo:
+                response = requests.get(f"http://127.0.0.1:5000/livro?titulo={titulo}")
+            else:
+                print("É necessário fornecer o ID ou o nome do livro.")
+                return None
+
+            if response.status_code == 200:
+                print(response.json())  # Imprime os dados do livro encontrados
+            else:
+                print(f"Livro não encontrado. Status code: {response.status_code}")
+                return None
+        except Exception as e:
+                print(f"Ocorreu um erro: {e}")
+                return None
+
+    def pesquisaUsuario(email=None,nome=None):
+        try:
+            if email:
+                response = requests.get(f"http://127.0.0.1:5000/usuario?email={email}")
+            elif nome:
+                response = requests.get(f"http://127.0.0.1:5000/usuario?nome={nome}")
+            else:
+                print("É necessário fornecer o e-mail ou o nome do usuário.")
+                return
+
+            if response.status_code == 200:
+                print(response.json())  # Imprime os dados do usuário encontrado
+            else:
+                print(f"Usuário não encontrado. Status code: {response.status_code}")
+        except Exception as e:
+                print(f"Ocorreu um erro: {e}")
+    
+
+    '''def carregar_usuarios():
+        try:
+            # Fazendo a requisição ao backend Flask para buscar os livros
+            response = requests.get("http://127.0.0.1:5000/usuario")
+            if response.status_code == 200:
+                
+                usuarios_backend = response.json()  # Obtém a lista de livros
+
+                if isinstance(usuarios_backend, list):  # Verifica se é uma lista
+                    for usuarios in usuarios_backend:
+                        usuario_dict = {
+                            "id": usuarios[0],         
+                            "nome": usuarios[1], 
+                            "email": usuarios[2],     
+                            "senha": usuarios[3],
+                            "tipo_usuario": usuarios[4],     
+                        }
+
+                        usuarios.append(usuario_dict)  # Adiciona o dicionário à lista de usuario    
+                    atualizar_lista_de_usuarios()  # Atualiza a interface com os usuarios obtidos
+                else:
+                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
+            else:
+                message_container.content = ft.Text(f"Erro ao carregar usuários: {response.json().get('message')}", color="red")
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+        page.update()'''
+
     # Função para atualizar a exibição da lista de livros na tela
     def atualizar_lista_de_livros():
     # Limpa os elementos atuais e insere os livros da lista
@@ -106,6 +173,83 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                 )
             )
     
+        page.update()
+
+
+    '''def atualizar_lista_de_usuarios():
+        # Limpa os elementos atuais e insere os usuarios da lista
+        lista_usuarios_coluna.controls.clear()
+        for usuario in usuarios:
+            lista_usuarios_coluna.controls.append(
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column(
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column(
+                                            controls=[
+                                                ft.Text(f"nome: {usuario['nome']}"),
+                                                ft.Text(f"email: {usuario['email']}"),
+                                            ],
+                                            spacing=5
+                                        ),
+                                    ],
+                                    spacing=10
+                                ),
+                                ft.Row(
+                                    controls=[
+                                        ft.TextButton(text='Fazer emprestimo'),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.END,
+                                    spacing=10
+                                )
+                            ],
+                            spacing=10
+                        ),
+                        padding=ft.padding.all(10),
+                    ),
+                    width=800,
+                    elevation=4
+                )
+            )
+        page.update()''' 
+    
+    def show_add_user_dialog(e):
+        usuario = ft.TextField(label="Nome ou Email", width=400)
+        livro = ft.TextField(label="Titulo ou ID do livro", width=400)
+        data_emprestimo = ft.TextField(label="Data de Empréstimo", width=400)
+        data_devolucao = ft.TextField(label="Data de Devolução",width=400)
+
+        def close_dialog(e):
+            page.dialog.open = False
+            page.update()
+
+        # Função para salvar os dados do novo livro
+        def add_user(e):
+            message_container.content = None
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Adicionar Novo Empréstimo"),
+            content=ft.Column(
+                controls=[
+                    usuario,
+                    livro,
+                    data_emprestimo,
+                    data_devolucao,
+                ],
+                tight=True
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=close_dialog),
+                ft.TextButton("Adicionar", on_click=add_user),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END
+        )
+
+        page.dialog = dialog
+        dialog.open = True
         page.update()
 
     def show_add_book_dialog(e):
@@ -249,6 +393,81 @@ def tela_principal_bibliotecario_view(page: ft.Page):
     lista_livros_coluna = ft.Column()
     lista_usuarios_coluna = ft.Column()
 
+
+    # Função para atualizar a exibição da lista de livros na tela
+    def atualizar_livros_pesquisa(livros_para_exibir=None):
+    # Limpa os elementos atuais
+        lista_livros_coluna.controls.clear()
+
+    # Usa a lista de livros passada ou a lista completa
+        livros_a_exibir = livros_para_exibir if livros_para_exibir is not None else []
+
+        for livro in livros_a_exibir:
+            lista_livros_coluna.controls.append(
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column(
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column(
+                                            controls=[
+                                                ft.Text(f"Título: {livro['titulo']}"),
+                                                ft.Text(f"Autor: {livro['autor']}"),
+                                                ft.Text(f"Gênero: {livro['genero']}"),
+                                                ft.Text(f"ISBN: {livro['isbn']}"),
+                                                ft.Text(f"ID: {livro['idlivro']}"),
+                                                ft.Text(f"Quantidade: {livro['quantidade']}"),
+                                            ],
+                                            spacing=5
+                                        ),
+                                    ],
+                                    spacing=10
+                                ),
+                                ft.Row(
+                                    controls=[
+                                        ft.TextButton(text='Editar Detalhes'),
+                                        ft.TextButton(text='Excluir livro', on_click=lambda e, livro_id=livro['idlivro']: excluirLivro(livro_id))
+                                    ],
+                                    alignment=ft.MainAxisAlignment.END,
+                                    spacing=10
+                                )
+                            ],
+                            spacing=10
+                        ),
+                        padding=ft.padding.all(10),
+                    ),
+                    width=800,
+                    elevation=4
+                )
+            )
+    
+    page.update()
+
+
+    search_field = ft.TextField(label="Buscar no estoque", expand=True)
+    result_text = ft.Text(value="", size=20)
+    
+    def on_search_click(e):
+        # Pega o valor do campo de texto
+        campo = search_field.value
+    
+        # Chama a função de pesquisa
+        resultado = pesquisaLivro(titulo=campo)
+
+        # Atualiza a interface com os resultados
+        if resultado:
+            atualizar_livros_pesquisa([resultado])
+            result_text.value = f"Livro encontrado: {resultado['titulo']}"
+        else:
+            atualizar_livros_pesquisa([])
+            result_text.value = "Livro não encontrado."
+
+    # Atualiza a interface
+    page.update()
+
+    
+
     tela_principal_bibliotecario = ft.Tabs(
         selected_index=1,
         animation_duration=300,
@@ -260,12 +479,10 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                         controls=[
                             ft.Row(
                                 controls=[
-                                    ft.TextField(
-                                        label="Buscar no estoque",
-                                        expand=True
-                                    ),
+                                   search_field,
                                     ft.IconButton(
-                                        icon="search"
+                                        icon="search",
+                                        on_click=on_search_click,
                                     )
                                 ],
                                 alignment=ft.MainAxisAlignment.START,
@@ -311,7 +528,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                 icon="add",
                                 height=50,
                                 width=300,
-                                on_click=lambda e: print("Adicionar Novo Empréstimo")
+                                on_click=show_add_user_dialog
                             ),
                         ],
                         alignment=ft.MainAxisAlignment.START,
