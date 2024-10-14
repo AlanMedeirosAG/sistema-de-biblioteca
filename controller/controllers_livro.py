@@ -14,6 +14,18 @@ def get_livros_route():
     livros = get_livros()
     return jsonify(livros), 200
 
+@livro_bp.route('/livro', methods=['GET'])
+def get_pesquisa_livro():
+
+    titulo = request.args.get('titulo')
+    idlivro = request.args.get('idlivro')
+    resultado = pesquisaLivro(titulo=titulo,idlivro=idlivro)
+
+    if resultado:
+        return jsonify(resultado), 200
+    else:
+        return jsonify({"mensagem": "Livro não encontrado"}), 404
+
 @livro_bp.route('/livro/<int:id>', methods=['PUT'])
 def update_livro_route(id):
     data = request.json
