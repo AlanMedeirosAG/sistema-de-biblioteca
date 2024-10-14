@@ -45,6 +45,58 @@ def get_livros():
         print(resultado)
         return resultado
 
+def pesquisaLivro(titulo=None, idlivro=None):
+    query = "SELECT * FROM livro WHERE "
+    
+    # Verifica se foi passado o idlivro ou o nome
+    if idlivro:
+        query += "idlivro = %s"
+        valores = (idlivro,)
+    elif titulo:
+        query += "titulo LIKE %s"
+        valores = ('%' + titulo + '%',)  # Faz uma busca parcial no nome
+    else:
+        print("Erro: É necessário informar um ID ou nome para a pesquisa.")
+        return None
+    
+    cursor = conexao.cursor()
+    cursor.execute(query, valores)
+    resultado = cursor.fetchall()
+
+    # Transforma o resultado em uma lista de dicionários
+    livros = []
+    for livro in resultado:
+        livro_dict = {
+            "idlivro": livro[0],
+            "titulo": livro[1],
+            "autor": livro[2],
+            "isbn": livro[3],
+            "genero": livro[4],
+            "campo_adicional": livro[5],  # Altere para o nome correto da coluna se necessário
+            "quantidade": livro[6]
+        }
+        livros.append(livro_dict)
+
+        return livros if livros else None  # Retorna a lista ou None se vazia
+    
+    # Cria conexão com o banco de dados
+    conexao = create_server_connection()
+    
+    if conexao:
+        try:
+            # Executa a consulta com os valores fornecidos
+            resultado = read_query(conexao, query, valores)
+            conexao.close()
+            print(resultado)
+            return resultado
+        except Exception as e:
+            print(f"Erro ao executar a consulta: {e}")
+            conexao.close()
+            return None
+    else:
+        print("Erro ao conectar com o banco de dados.")
+        return None
+
 def update_livro(id, data):
     query = "UPDATE livro SET titulo = %s, autor = %s, ano_publicacao = %s, isbn = %s WHERE idlivro = %s"
     conexao = create_server_connection()
