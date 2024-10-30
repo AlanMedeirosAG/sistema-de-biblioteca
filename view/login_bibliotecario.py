@@ -2,10 +2,10 @@ import flet as ft
 import requests 
 
 def main(page: ft.Page):
-    login_view(page)
+    login_bibliotecario_view(page)
 
-def login_view(page: ft.Page):
-    page.title = 'Login'
+def login_bibliotecario_view(page: ft.Page):
+    page.title = 'Login Bibliotecario'
     page.clean()
     page.horizontal_alignment = 'center'
     page.vertical_alignment = 'center'
@@ -15,48 +15,45 @@ def login_view(page: ft.Page):
     def login_click(e):
         message_container.content = None
 
-    # Verifica se os campos estão preenchidos
+        # Verifica se os campos estão preenchidos
         if not email.value or not senha.value:
             message_container.content = ft.Text("Preencha todos os campos.", color="red")
             page.update()
             return
 
-    # Validação do formato do e-mail
+        # Validação do formato do e-mail
         if "@" not in email.value or "." not in email.value:
             message_container.content = ft.Text("O e-mail deve ser válido (ex: exemplo@dominio.com).", color="red")
             page.update()
             return 
-
-    # Pegando os valores dos campos de texto
+        
+        # Pegando os valores dos campos de texto
         email_value = email.value
         senha_value = senha.value
 
         try:
-        # Fazendo a requisição ao backend Flask
+            # Fazendo a requisição ao backend Flask
             response = requests.post("http://127.0.0.1:5000/login", json={"email": email_value, "senha": senha_value})
 
-        # Verificando o status da resposta
+            # Verificando o status da resposta
             if response.status_code == 200:
-            # Extraindo o tipo de usuário da resposta
+                # Extraindo o tipo de usuário da resposta
                 user_type = response.json().get('usuario').get('tipo')
 
-                if user_type == 'usuario':
-                    message_container.content = ft.Text("Login com sucesso como Usuário", color="green")
-                    page.go("/tela_principal_usuario")
+                if user_type == 'bibliotecario':
+                    message_container.content = ft.Text("Login com sucesso como bibliotecario", color="green")
+                    page.go("/tela_principal_bibliotecario")
                 else:
-                    message_container.content = ft.Text("Não é usuário.", color="red")
-            else:
-                message_container.content = ft.Text(f"Erro no login: {response.json().get('message')}", color="red")
+                    message_container.content = ft.Text("Não é bibliotecario.", color="red")
 
         except requests.RequestException as ex:
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
 
         page.update()
-
     
     message_container = ft.Container(alignment=ft.alignment.center)
 
-    #campos de senha e email
+    #campos de texto de senha e email
     email = ft.TextField(
         label='Digite o seu email',
         width=300,
@@ -78,7 +75,7 @@ def login_view(page: ft.Page):
         keyboard_type=ft.KeyboardType.VISIBLE_PASSWORD,
     )
 
-    #parte visual da tela de login
+    #Parte visual da tela de login
     Login = ft.Column([
         ft.Container(
             width=800,
@@ -93,13 +90,7 @@ def login_view(page: ft.Page):
                     content=ft.Column([
                         ft.Container(
                             padding=ft.padding.only(top=10, bottom=12),
-                            content=ft.Column([
-                                ft.Text(
-                                    value='Login',
-                                    weight='bold',
-                                    size=20
-                                )
-                            ])
+                            content=ft.Column([ft.Text(value='Login bibliotecário', weight='bold', size=20)])
                         ),
                         ft.Column([
                             email,
@@ -109,7 +100,7 @@ def login_view(page: ft.Page):
                                 text='Entrar',
                                 width=300,
                                 height=40,
-                                on_click=login_click
+                                on_click=login_click  # Chama a função de login aqui
                             ),
                             ft.Row([
                                 ft.TextButton(
@@ -120,8 +111,8 @@ def login_view(page: ft.Page):
                             ], width=300, alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                             ft.Container(
                                 content=ft.TextButton(
-                                    text='Sou bibliotecário',
-                                    on_click=lambda _: page.go("/login_bibliotecario")
+                                    text='Sou Usuário',
+                                    on_click=lambda _: page.go("/"),
                                 ), 
                                 margin=30, alignment=ft.alignment.bottom_right
                             ),
@@ -133,9 +124,7 @@ def login_view(page: ft.Page):
     ])
     
     return ft.View(
-        "/",
-        [
-            Login,
-        ],
+        "/login_bibliotecario",
+        [Login],
         horizontal_alignment='center'
     )
