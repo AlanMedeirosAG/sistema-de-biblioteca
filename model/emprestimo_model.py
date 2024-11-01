@@ -2,10 +2,10 @@ from mysql.connector import Error
 from werkzeug.security import check_password_hash
 from .Server import create_server_connection, execute_query, read_query
 
-def create_emprestimo(usuario_id, livro_id=None, livro_titulo=None, data_emprestimo=None, data_devolucao=None):
+def create_emprestimo(idusuario, livro_id=None, livro_titulo=None, data_emprestimo=None, data_devolucao=None):
     # Query para inserir o empréstimo com datas fornecidas
     query_emprestimo = """
-        INSERT INTO historico (usuario_id, livro, multa, Now(), data_devolucao)
+        INSERT INTO historico (idusuario, livro, multa, data_emprestimo, data_devolucao)
         VALUES (%s, %s, NULL, %s, %s)
     """
     #Emprestimo de uma semana com o Now()
@@ -25,9 +25,9 @@ def create_emprestimo(usuario_id, livro_id=None, livro_titulo=None, data_emprest
                 
             livro = cursor.fetchone()
             
-            if livro and livro['quantidade'] > 0:
+            if livro and livro[0] > 0:
                 # Inserir o empréstimo com as datas
-                cursor.execute(query_emprestimo, (usuario_id, livro_id or livro_titulo, data_emprestimo, data_devolucao))
+                cursor.execute(query_emprestimo, (idusuario, livro_id or livro_titulo, data_emprestimo, data_devolucao))
                 
                 # Atualizar a quantidade do livro
                 cursor.execute("UPDATE livro SET quantidade = quantidade - 1 WHERE idlivro = %s OR titulo = %s",(livro_id, livro_titulo))
@@ -36,7 +36,7 @@ def create_emprestimo(usuario_id, livro_id=None, livro_titulo=None, data_emprest
                 # Commit para salvar as alterações
                 conexao.commit()
                 
-                return f"Empréstimo realizado com sucesso! Livro ID: {livro_id} para o usuário ID: {usuario_id}"
+                return f"Empréstimo realizado com sucesso! Livro ID: {livro_id} para o usuário ID: {idusuario}"
             else:
                 return "Livro não disponível para empréstimo."
         
@@ -55,7 +55,7 @@ def create_emprestimo(usuario_id, livro_id=None, livro_titulo=None, data_emprest
 # Função para buscar usuário pelo nome ou email
 def find_usuario_by_nome_email(nome=None, email=None):
     query = """
-        SELECT id, nome, email
+        SELECT idusuario, nome, email
         FROM usuario
         WHERE (nome = %s OR email = %s)
         LIMIT 1
@@ -70,6 +70,32 @@ def find_usuario_by_nome_email(nome=None, email=None):
             return usuario  # Retorna o dicionário do usuário ou None se não encontrado
         except Exception as e:
             print(f"Erro ao buscar usuário: {e}")
+            return None
+        finally:
+            cursor.close()
+            conexao.close()
+    else:
+        print("Erro na conexão com o banco de dados.")
+        return None
+    
+# Função para buscar livro pelo titulo ou id
+def verifica_livro_bd(titulo=None, idlivro=None):
+    query = """
+        SELECT idlivro, titulo
+        FROM livro
+        WHERE (titulo = %s OR idlivro = %s)
+        LIMIT 1
+    """
+    
+    conexao = create_server_connection()
+    if conexao:
+        try:
+            cursor = conexao.cursor(dictionary=True)
+            cursor.execute(query, (titulo, idlivro))
+            livro = cursor.fetchone()  # Busca um único livro que corresponde ao critério
+            return livro is not None  # Retorna o dicionário do livro ou None se não encontrado
+        except Exception as e:
+            print(f"Erro ao verificar livro: {e}")
             return None
         finally:
             cursor.close()
