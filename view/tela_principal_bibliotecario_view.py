@@ -333,6 +333,21 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         dialog.open = True
         page.update()
 
+    #Função de devolução de livros
+    def book_return(idhistorico,livro):
+        try:
+            devolucao_data = {
+                "idhistorico":idhistorico,
+                "livro":livro
+            }
+            response = requests.put("http://127.0.0.1:5000/emprestimo", json=devolucao_data)
+            if response.status_code == 200:
+                print("Livro devolvido com sucesso!")
+            else:
+                print("Erro ao devolver o livro.")
+        except Exception as ex:
+            print(f"Ocorreu um erro: {ex}")
+
 
     #Função de tela de adição de livros no estoque
     def show_add_book_dialog(e):
