@@ -51,6 +51,44 @@ def create_emprestimo(idusuario, livro_id=None, livro_titulo=None, data_empresti
     else:
         print("Erro na conexão com o banco de dados.")
         return None
+    
+def create_devolucao(idhistorico,livro_id = None,livro_titulo = None):
+  
+    # Criar a conexao
+    conexao = create_server_connection()
+  
+    if conexao:
+        try:
+            cursor = conexao.cursor()
+            
+            # Atualiza a data de devolução no histórico
+            cursor.execute("""
+                UPDATE historico
+                SET data_devolucao = NOW()  -- Define a data de devolução como a data atual
+                WHERE idhistorico = %s
+            """, (idhistorico,))
+          
+            # Atualiza a quantidade de livros na tabela
+            if livro_id:
+                cursor.execute("UPDATE livro SET quantidade = quantidade + 1 WHERE idlivro = %s", (livro_id,))
+            elif livro_titulo:
+                cursor.execute("UPDATE livro SET quantidade = quantidade + 1 WHERE titulo = %s", (livro_titulo,))
+        
+            conexao.commit()
+        
+            return f"Devolução registrada com sucesso! ID do emprestimo:{idhistorico}"
+    
+        except Exception as e:
+            conexao.rollback() # Reverte em caso de erro
+            print(f"Erro ao registrar devolução: {e}")
+            
+        finally:
+            cursor.close()
+            conexao.close()
+    else:
+        print("Erro na conexao com o banco de dados.")
+        return None
+    
 
 # Função para buscar usuário pelo nome ou email
 def find_usuario_by_nome_email(nome=None, email=None):
