@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from model.emprestimo_model import create_emprestimo, find_usuario_by_nome_email,verifica_livro_bd
+from model.emprestimo_model import create_emprestimo, find_usuario_by_nome_email,verifica_livro_bd,create_devolucao
 
 emprestimo_bp = Blueprint('emprestimo_bp', __name__)
 
@@ -52,4 +52,37 @@ def create_emprestimo_route():
         import traceback
         print("Erro interno:", traceback.format_exc())
         return jsonify({"message": f"Erro interno ao criar o empréstimo: {str(e)}"}), 500
+
+@emprestimo_bp.route("/emprestimo", methods=['PUT'])
+def book_return_route():
+    data = request.json
+    
+    # Verificação dos dados necessários
+    if not data or 'idhistorico' not in data or 'livro' not in data:
+        return jsonify({
+            "message": "Dados insuficientes para criar a devolução"
+        }), 400
+
+    livro_info = data.get('livro')
+
+    # Identifica se livro_info é um ID (int) ou um título (str)
+    livro_id = livro_info if isinstance(livro_info, int) else None
+    livro_titulo = livro_info if isinstance(livro_info, str) else None
+    
+    # Chama a função de criação do empréstimo usando o ID do usuário encontrado
+    try:
+        resultado = create_devolucao(
+            idhistorico=data['idhistorico'],  # Use a chave correta para o histórico
+            livro_id=livro_id,  # Se for um ID numérico
+            livro_titulo=livro_titulo  # Se for o título do livro 
+        )
         
+        if resultado:
+            return jsonify({"message": resultado}), 200  # Alterei para 200, pois é uma operação bem-sucedida
+        else:
+            return jsonify({"message": "Erro na devolução."}), 500
+    except Exception as e:
+        import traceback
+        print("Erro interno:", traceback.format_exc())
+        return jsonify({"message": f"Erro interno na devolução: {str(e)}"}), 500
+
