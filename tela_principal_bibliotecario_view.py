@@ -14,8 +14,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Lista para armazenar os livros adicionados
     livros = []
-    livros_pesquisados = []
-    #usuarios = []
+    historicos = []
     
     message_container = ft.Container(content=ft.Text("Aguardando ação..."))
 
@@ -41,7 +40,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                         }
 
                         livros.append(livro_dict)  # Adiciona o dicionário à lista de livros    
-                    atualizar_lista_de_livros()  # Atualiza a interface com os livros obtidos
+                    atualizar_lista_de_livros(livros)  # Atualiza a interface com os livros obtidos
                 else:
                     message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
             else:
@@ -49,6 +48,41 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         except requests.RequestException as ex:
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
+        
+    #Função de carregar historicos
+    def carregar_historicos():
+        try:
+            # Fazendo a requisição ao backend Flask para buscar os livros
+            response = requests.get("http://127.0.0.1:5000/historico")
+            if response.status_code == 200:
+                
+                historicos_backend = response.json()  # Obtém a lista de historicos
+                
+                print("Dados recebidos do backend:", historicos_backend)
+
+
+                if isinstance(historicos_backend, list): # Verifica se é uma lista
+                    historicos.clear()
+                    for historico in historicos_backend:
+                        historico_dict = {
+                            "idhistorico": historico[0],         
+                            "livro": historico[1], 
+                            "data_emprestimo": historico[3],
+                            "data_devolucao": historico[4],     
+                            "idusuario": historico[5] 
+                        }
+
+                        historicos.append(historico_dict) # Adiciona o dicionário à lista de livros
+                        print("Históricos carregados:", historicos)
+                    atualizar_lista_historicos()  # Atualiza a interface com os livros obtidos
+                else:
+                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
+            else:
+                message_container.content = ft.Text(f"Erro ao carregar historicos: {response.json().get('message')}", color="red")
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+        page.update()
+        
 
     #Função de excluir livros
     def excluirLivro(id):
@@ -122,44 +156,17 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             print(f"Ocorreu um erro: {e}")
             return None
 
-    
-
-    '''def carregar_usuarios():
-        try:
-            # Fazendo a requisição ao backend Flask para buscar os livros
-            response = requests.get("http://127.0.0.1:5000/usuario")
-            if response.status_code == 200:
-                
-                usuarios_backend = response.json()  # Obtém a lista de livros
-
-                if isinstance(usuarios_backend, list):  # Verifica se é uma lista
-                    for usuarios in usuarios_backend:
-                        usuario_dict = {
-                            "id": usuarios[0],         
-                            "nome": usuarios[1], 
-                            "email": usuarios[2],     
-                            "senha": usuarios[3],
-                            "tipo_usuario": usuarios[4],     
-                        }
-
-                        usuarios.append(usuario_dict)  # Adiciona o dicionário à lista de usuario    
-                    atualizar_lista_de_usuarios()  # Atualiza a interface com os usuarios obtidos
-                else:
-                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
-            else:
-                message_container.content = ft.Text(f"Erro ao carregar usuários: {response.json().get('message')}", color="red")
-        except requests.RequestException as ex:
-            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
-        page.update()'''
-
     # Função para atualizar a exibição da lista de livros na tela
     def atualizar_lista_de_livros(livros_exibir=None):
+        print("livros a exibir:",livros_exibir)
     # Limpa os elementos atuais e insere os livros da lista
-        lista_para_mostrar = livros_exibir if livros_exibir is not None else livros
         lista_livros_coluna.controls.clear()
+        lista_para_mostrar = livros_exibir if livros_exibir is not None else livros
 
         for livro in lista_para_mostrar:
-            lista_livros_coluna.controls.append(
+            print(livro)
+            if isinstance(livro, dict) and all(key in livro for key in ['titulo', 'autor', 'genero', 'isbn', 'idlivro', 'quantidade']):
+                lista_livros_coluna.controls.append(
                 ft.Card(
                     content=ft.Container(
                         content=ft.Column(
@@ -196,15 +203,19 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                     elevation=4
                 )
             )
-    
+            else:
+                 lista_livros_coluna.controls.append(
+                ft.Text("Erro: Livro com dados inválidos.", color='red')
+            )
         page.update()
+    
+    # Função para atualizar a exibição da lista de historico na tela
+    def atualizar_lista_historicos():
+    # Limpa os elementos atuais e insere os livros da lista
+        lista_historicos_coluna.controls.clear()
 
-
-    '''def atualizar_lista_de_usuarios():
-        # Limpa os elementos atuais e insere os usuarios da lista
-        lista_usuarios_coluna.controls.clear()
-        for usuario in usuarios:
-            lista_usuarios_coluna.controls.append(
+        for historico in historicos:
+                lista_historicos_coluna.controls.append(
                 ft.Card(
                     content=ft.Container(
                         content=ft.Column(
@@ -213,18 +224,20 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                     controls=[
                                         ft.Column(
                                             controls=[
-                                                ft.Text(f"nome: {usuario['nome']}"),
-                                                ft.Text(f"email: {usuario['email']}"),
+                                                ft.Text(f"Usuario: {historico['idusuario']}"),
+                                                ft.Text(f"livro: {historico['livro']}"),
+                                                ft.Text(f"data_emprestimo: {historico['data_emprestimo']}"),
+                                                ft.Text(f"data_devolucao: {historico['data_devolucao']}"),
+                                                ft.Text(f"emprestimo_id: {historico['idhistorico']}"),
                                             ],
                                             spacing=5
                                         ),
                                     ],
-                                    spacing=10
+                                    spacing=10 
                                 ),
                                 ft.Row(
                                     controls=[
-                                        ft.TextButton(text='Fazer emprestimo'),
-                                    ],
+                                        ft.TextButton(text='Devolver livro',on_click=lambda e, emprestimo_id=historico['idhistorico']: book_return(emprestimo_id))                                    ],
                                     alignment=ft.MainAxisAlignment.END,
                                     spacing=10
                                 )
@@ -237,8 +250,9 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                     elevation=4
                 )
             )
-        page.update()''' 
-    
+        page.update()
+        
+
     # Função de tela de empréstimo
     def show_add_loan_dialog(e):
         usuario = ft.TextField(label="Nome ou Email", width=400)
@@ -325,6 +339,21 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         page.dialog = dialog
         dialog.open = True
         page.update()
+        
+    #Função de devolução de livros
+    def book_return(idhistorico,livro):
+        try:
+            devolucao_data = {
+                "idhistorico":idhistorico,
+                "livro":livro
+            }
+            response = requests.put("http://127.0.0.1:5000/emprestimo", json=devolucao_data)
+            if response.status_code == 200:
+                print("Livro devolvido com sucesso!")
+            else:
+                print("Erro ao devolver o livro.")
+        except Exception as ex:
+            print(f"Ocorreu um erro: {ex}")
 
 
     #Função de tela de adição de livros no estoque
@@ -467,31 +496,46 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Coluna para listar os livros
     lista_livros_coluna = ft.Column()
-    lista_usuarios_coluna = ft.Column()
+    lista_historicos_coluna = ft.Column()
 
-        # Pesquisa de livro
+    
+    # Pesquisa de livro
     def on_search(e):
         # Pega o valor do campo de texto
-        campo = search_field.value.lower()
+        campo = search_field.value.strip()
     
         # Chama a função de pesquisa
-        livros_pesquisados = pesquisaLivro(campo)
+        resultado = pesquisaLivro(titulo=campo)
+
+        # Verifica se o resultado é uma lista de listas
+        if isinstance(resultado, list) and all(isinstance(item, list) for item in resultado):
+        # Converte listas em dicionários
+            resultado = [
+                {
+                    'idlivro': item[0],
+                    'titulo': item[1],
+                    'autor': item[2],
+                    'isbn': item[3],
+                    'genero': item[4],
+                    'quantidade': item[6],
+                }
+                for item in resultado
+            ]
 
         # Atualiza a interface com os resultados
-        if livros_pesquisados:
-            carregar_livros([livros_pesquisados])
-            result_text.value = f"Livros encontrados:"
+        if resultado:
+            atualizar_lista_de_livros(resultado)  # Passa diretamente resultado
+            result_text.value = "Livros encontrados"
         else:
-            carregar_livros([])
-            result_text.value = "Nenhum livro encontrado."
+            result_text.value = "Por favor digite um titulo para pesquisar"
+            atualizar_lista_de_livros(livros)
 
-    # Atualiza a interface
+        # Atualiza a interface
     page.update()
-
 
     search_field = ft.TextField(label="Buscar no estoque", 
         expand=True,
-        on_change=on_search,
+        on_change=None,
         )
     result_text = ft.Text(value="", size=20)
     
@@ -682,6 +726,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     page.add(tela_principal_bibliotecario)
     carregar_livros() #carrega os livros ao iniciar a tela
+    carregar_historicos() #carrega os emprestimos na tela
     page.update()
 
     return ft.View(
