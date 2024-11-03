@@ -20,9 +20,16 @@ def get_livros_route():
 # Rota para obter um livro atraves da pesquisa (GET /livro)
 @livro_bp.route('/livro', methods=['GET'])
 def get_pesquisa_livro():
-
+    
     titulo = request.args.get('titulo')
     idlivro = request.args.get('idlivro')
+    
+    print(f"Parametro recebido:{titulo}")
+    
+    #Verifica se pelo menos um parametro foi fornecido
+    if not titulo and not idlivro:
+        return jsonify({"Mensagem:É necessario fornecer o titulo ou id do livro"}),400
+
     resultado = pesquisaLivro(titulo=titulo,idlivro=idlivro)
 
     if resultado:
