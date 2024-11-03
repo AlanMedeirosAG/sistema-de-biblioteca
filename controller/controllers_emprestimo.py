@@ -85,4 +85,3 @@ def book_return_route():
         import traceback
         print("Erro interno:", traceback.format_exc())
         return jsonify({"message": f"Erro interno na devolução: {str(e)}"}), 500
-
