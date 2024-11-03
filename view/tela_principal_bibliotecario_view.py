@@ -64,7 +64,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
 
-    #pesquisa o livro por nome ou id e verifica se a quantidade de livros é maior que zero para o emprestimo
+    #Função de pesquisa de livros
     def pesquisaLivro(id=None, titulo=None):
         try:
             # Verifica se o ID ou o título foi fornecido
@@ -75,28 +75,39 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             else:
                 print("É necessário fornecer o ID ou o nome do livro.")
                 message_container.content = ft.Text("É necessário fornecer o ID ou o nome do livro.", color="red")
+                page.update()  # Atualiza a interface
                 return None
 
             # Verifica se a requisição foi bem-sucedida
             if response.status_code == 200:
                 livro_data = response.json()  # Converte a resposta JSON para um dicionário
-            
+
                 # Verifica a quantidade em estoque
                 quantidade = livro_data.get("quantidade", 0)
                 if quantidade > 0:
-                    print(f"Livro '{livro_data['titulo']}' está disponível para empréstimo! (Quantidade em estoque: {quantidade})")
+                    mensagem = f"Livro '{livro_data['titulo']}' está disponível para empréstimo! (Quantidade em estoque: {quantidade})"
+                    print(mensagem)
+                    message_container.content = ft.Text(mensagem, color="green")
+                    page.update()  # Atualiza a interface
                     return livro_data  # Retorna os dados do livro se disponível
                 else:
-                    print(f"Livro '{livro_data['titulo']}' está indisponível no momento.")
-                    message_container.content = ft.Text(f"Livro '{livro_data['titulo']}' está indisponível no momento.", color="red")
+                    mensagem = f"Livro '{livro_data['titulo']}' está indisponível no momento."
+                    print(mensagem)
+                    message_container.content = ft.Text(mensagem, color="red")
+                    page.update()  # Atualiza a interface
                     return None  # Retorna None se o livro não estiver disponível
             else:
-                print(f"Erro ao buscar o livro. Status code: {response.status_code}")
+                mensagem = f"Erro ao buscar o livro. Status code: {response.status_code}"
+                print(mensagem)
+                message_container.content = ft.Text(mensagem, color="red")
+                page.update()  # Atualiza a interface
                 return None
 
         except Exception as e:
-            print(f"Ocorreu um erro: {e}")
-            message_container.content = ft.Text(f"Ocorreu um erro: {e}", color="red")
+            mensagem = f"Ocorreu um erro: {e}"
+            print(mensagem)
+            message_container.content = ft.Text(mensagem, color="red")
+            page.update()  # Atualiza a interface
             return None
 
 
@@ -550,6 +561,13 @@ def tela_principal_bibliotecario_view(page: ft.Page):
     def on_search_click(e):
         # Pega o valor do campo de texto
         campo = search_field.value
+        
+        #Verifica se o campo foi preenchido
+        if not campo:
+            result_text.value = "Por favor,insira o titulo do livro a pesquisar"
+            atualizar_livros_pesquisa([])
+            page.update()
+            return
     
         # Chama a função de pesquisa
         resultado = pesquisaLivro(titulo=campo)
