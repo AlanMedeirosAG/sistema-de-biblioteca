@@ -14,6 +14,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Lista para armazenar os livros adicionados
     livros = []
+    livros_pesquisados = []
     #usuarios = []
     
     message_container = ft.Container(content=ft.Text("Aguardando ação..."))
@@ -64,7 +65,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
 
-    #Função de pesquisa de livros
+    #pesquisa o livro por nome ou id e verifica se a quantidade de livros é maior que zero para o emprestimo
     def pesquisaLivro(id=None, titulo=None):
         try:
             # Verifica se o ID ou o título foi fornecido
@@ -75,39 +76,19 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             else:
                 print("É necessário fornecer o ID ou o nome do livro.")
                 message_container.content = ft.Text("É necessário fornecer o ID ou o nome do livro.", color="red")
-                page.update()  # Atualiza a interface
                 return None
 
             # Verifica se a requisição foi bem-sucedida
             if response.status_code == 200:
                 livro_data = response.json()  # Converte a resposta JSON para um dicionário
-
-                # Verifica a quantidade em estoque
-                quantidade = livro_data.get("quantidade", 0)
-                if quantidade > 0:
-                    mensagem = f"Livro '{livro_data['titulo']}' está disponível para empréstimo! (Quantidade em estoque: {quantidade})"
-                    print(mensagem)
-                    message_container.content = ft.Text(mensagem, color="green")
-                    page.update()  # Atualiza a interface
-                    return livro_data  # Retorna os dados do livro se disponível
-                else:
-                    mensagem = f"Livro '{livro_data['titulo']}' está indisponível no momento."
-                    print(mensagem)
-                    message_container.content = ft.Text(mensagem, color="red")
-                    page.update()  # Atualiza a interface
-                    return None  # Retorna None se o livro não estiver disponível
+                return livro_data
             else:
-                mensagem = f"Erro ao buscar o livro. Status code: {response.status_code}"
-                print(mensagem)
-                message_container.content = ft.Text(mensagem, color="red")
-                page.update()  # Atualiza a interface
+                print(f"Erro ao buscar o livro. Status code: {response.status_code}")
                 return None
 
         except Exception as e:
-            mensagem = f"Ocorreu um erro: {e}"
-            print(mensagem)
-            message_container.content = ft.Text(mensagem, color="red")
-            page.update()  # Atualiza a interface
+            print(f"Ocorreu um erro: {e}")
+            message_container.content = ft.Text(f"Ocorreu um erro: {e}", color="red")
             return None
 
 
@@ -172,12 +153,15 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         page.update()'''
 
     # Função para atualizar a exibição da lista de livros na tela
-    def atualizar_lista_de_livros():
+    def atualizar_lista_de_livros(livros_exibir=None):
     # Limpa os elementos atuais e insere os livros da lista
         lista_livros_coluna.controls.clear()
+        lista_para_mostrar = livros_exibir if livros_exibir is not None else livros
 
-        for livro in livros:
-            lista_livros_coluna.controls.append(
+        for livro in lista_para_mostrar:
+            print(livro)
+            if isinstance(livro, dict) and all(key in livro for key in ['titulo', 'autor', 'genero', 'isbn', 'idlivro', 'quantidade']):
+                lista_livros_coluna.controls.append(
                 ft.Card(
                     content=ft.Container(
                         content=ft.Column(
@@ -214,8 +198,13 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                     elevation=4
                 )
             )
-    
+            else:
+                 lista_livros_coluna.controls.append(
+                ft.Text("Erro: Livro com dados inválidos.", color='red')
+            )
         page.update()
+
+
 
 
     '''def atualizar_lista_de_usuarios():
@@ -343,21 +332,6 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         page.dialog = dialog
         dialog.open = True
         page.update()
-
-    #Função de devolução de livros
-    def book_return(idhistorico,livro):
-        try:
-            devolucao_data = {
-                "idhistorico":idhistorico,
-                "livro":livro
-            }
-            response = requests.put("http://127.0.0.1:5000/emprestimo", json=devolucao_data)
-            if response.status_code == 200:
-                print("Livro devolvido com sucesso!")
-            else:
-                print("Erro ao devolver o livro.")
-        except Exception as ex:
-            print(f"Ocorreu um erro: {ex}")
 
 
     #Função de tela de adição de livros no estoque
@@ -502,87 +476,46 @@ def tela_principal_bibliotecario_view(page: ft.Page):
     lista_livros_coluna = ft.Column()
     lista_usuarios_coluna = ft.Column()
 
-
-    # Função para atualizar a exibição da lista de livros na tela
-    def atualizar_livros_pesquisa(livros_para_exibir=None):
-    # Limpa os elementos atuais
-        lista_livros_coluna.controls.clear()
-
-    # Usa a lista de livros passada ou a lista completa
-        livros_a_exibir = livros_para_exibir if livros_para_exibir is not None else []
-
-        for livro in livros_a_exibir:
-            lista_livros_coluna.controls.append(
-                ft.Card(
-                    content=ft.Container(
-                        content=ft.Column(
-                            controls=[
-                                ft.Row(
-                                    controls=[
-                                        ft.Column(
-                                            controls=[
-                                                ft.Text(f"Título: {livro['titulo']}"),
-                                                ft.Text(f"Autor: {livro['autor']}"),
-                                                ft.Text(f"Gênero: {livro['genero']}"),
-                                                ft.Text(f"ISBN: {livro['isbn']}"),
-                                                ft.Text(f"ID: {livro['idlivro']}"),
-                                                ft.Text(f"Quantidade: {livro['quantidade']}"),
-                                            ],
-                                            spacing=5
-                                        ),
-                                    ],
-                                    spacing=10
-                                ),
-                                ft.Row(
-                                    controls=[
-                                        ft.TextButton(text='Editar Detalhes'),
-                                        ft.TextButton(text='Excluir livro', on_click=lambda e, livro_id=livro['idlivro']: excluirLivro(livro_id))
-                                    ],
-                                    alignment=ft.MainAxisAlignment.END,
-                                    spacing=10
-                                )
-                            ],
-                            spacing=10
-                        ),
-                        padding=ft.padding.all(10),
-                    ),
-                    width=800,
-                    elevation=4
-                )
-            )
-    
-    page.update()
-
-
-    search_field = ft.TextField(label="Buscar no estoque", expand=True)
-    result_text = ft.Text(value="", size=20)
-    
-    # Pesquisa de livro na lupa
-    def on_search_click(e):
+        # Pesquisa de livro
+    def on_search(e):
         # Pega o valor do campo de texto
-        campo = search_field.value
-        
-        #Verifica se o campo foi preenchido
-        if not campo:
-            result_text.value = "Por favor,insira o titulo do livro a pesquisar"
-            atualizar_livros_pesquisa([])
-            page.update()
-            return
+        campo = search_field.value.strip()
     
         # Chama a função de pesquisa
         resultado = pesquisaLivro(titulo=campo)
 
+        # Verifica se o resultado é uma lista de listas
+        if isinstance(resultado, list) and all(isinstance(item, list) for item in resultado):
+        # Converte listas em dicionários
+            resultado = [
+                {
+                    'idlivro': item[0],
+                    'titulo': item[1],
+                    'autor': item[2],
+                    'isbn': item[3],
+                    'genero': item[4],
+                    'quantidade': item[6],
+                }
+                for item in resultado
+            ]
+
         # Atualiza a interface com os resultados
         if resultado:
-            atualizar_livros_pesquisa([resultado])
-            result_text.value = f"Livro encontrado: {resultado['titulo']}"
+            atualizar_lista_de_livros(resultado)  # Passa diretamente resultado
+            result_text.value = "Livros encontrados:"
         else:
-            atualizar_livros_pesquisa([])
-            result_text.value = "Livro não encontrado."
+            result_text.value = "Por favor digite um titulo para pesquisar"
+            atualizar_lista_de_livros()
 
-    # Atualiza a interface
-    page.update()
+        # Atualiza a interface
+        page.update()
 
+    search_field = ft.TextField(label="Buscar no estoque", 
+        expand=True,
+        on_change=None,
+        )
+    result_text = ft.Text(value="", size=20)
+    
     
     #Parte visual da tela de bibliotecario
     tela_principal_bibliotecario = ft.Tabs(
@@ -599,7 +532,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                    search_field,
                                     ft.IconButton(
                                         icon="search",
-                                        on_click=on_search_click,#pesquisa de livros pelo icone da lupa
+                                        on_click=on_search, # pesquisa de livros pelo icone da lupa
                                     )
                                 ],
                                 alignment=ft.MainAxisAlignment.START,
