@@ -1,5 +1,6 @@
-import datetime
+from datetime import datetime
 import flet as ft
+from flet import ListView
 import requests 
 
 def main(page: ft.Page):
@@ -14,8 +15,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
     # Lista para armazenar os livros adicionados
     livros = []
-    livros_pesquisados = []
-    #usuarios = []
+    historicos = []
     
     message_container = ft.Container(content=ft.Text("Aguardando ação..."))
 
@@ -41,7 +41,7 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                         }
 
                         livros.append(livro_dict)  # Adiciona o dicionário à lista de livros    
-                    atualizar_lista_de_livros()  # Atualiza a interface com os livros obtidos
+                    atualizar_lista_de_livros(livros)  # Atualiza a interface com os livros obtidos
                 else:
                     message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
             else:
@@ -49,6 +49,42 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         except requests.RequestException as ex:
             message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
         page.update()
+        
+    #Função de carregar historicos
+    def carregar_historicos():
+        try:
+            # Fazendo a requisição ao backend Flask para buscar os livros
+            response = requests.get("http://127.0.0.1:5000/historico")
+            if response.status_code == 200:
+                
+                historicos_backend = response.json()  # Obtém a lista de historicos
+                
+                print("Dados recebidos do backend:", historicos_backend)
+            
+                if isinstance(historicos_backend, list): # Verifica se é uma lista
+                    historicos.clear()
+                    for historico in historicos_backend:
+                        historico_dict = {
+                            "idhistorico": historico["idhistorico"],         
+                            "livro": historico["livro"],
+                            "multa": historico["multa"],
+                            "data_emprestimo": historico["data_emprestimo"],
+                            "data_devolucao": historico["data_devolucao"],     
+                            "idusuario": historico["idusuario"],
+                            "devolvido": historico["devolvido"]
+                        }
+
+                        historicos.append(historico_dict) # Adiciona o dicionário à lista de livros
+                    print("Históricos carregados:", historicos)
+                    atualizar_lista_historicos()  # Atualiza a interface com os livros obtidos
+                else:
+                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
+            else:
+                message_container.content = ft.Text(f"Erro ao carregar historicos: {response.json().get('message')}", color="red")
+        except requests.RequestException as ex:
+            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
+        page.update()
+        
 
     #Função de excluir livros
     def excluirLivro(id):
@@ -122,38 +158,9 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             print(f"Ocorreu um erro: {e}")
             return None
 
-    
-
-    '''def carregar_usuarios():
-        try:
-            # Fazendo a requisição ao backend Flask para buscar os livros
-            response = requests.get("http://127.0.0.1:5000/usuario")
-            if response.status_code == 200:
-                
-                usuarios_backend = response.json()  # Obtém a lista de livros
-
-                if isinstance(usuarios_backend, list):  # Verifica se é uma lista
-                    for usuarios in usuarios_backend:
-                        usuario_dict = {
-                            "id": usuarios[0],         
-                            "nome": usuarios[1], 
-                            "email": usuarios[2],     
-                            "senha": usuarios[3],
-                            "tipo_usuario": usuarios[4],     
-                        }
-
-                        usuarios.append(usuario_dict)  # Adiciona o dicionário à lista de usuario    
-                    atualizar_lista_de_usuarios()  # Atualiza a interface com os usuarios obtidos
-                else:
-                    message_container.content = ft.Text("Erro: O formato dos dados retornados não é uma lista.", color="red")
-            else:
-                message_container.content = ft.Text(f"Erro ao carregar usuários: {response.json().get('message')}", color="red")
-        except requests.RequestException as ex:
-            message_container.content = ft.Text(f"Erro de conexão: {ex}", color="red")
-        page.update()'''
-
     # Função para atualizar a exibição da lista de livros na tela
     def atualizar_lista_de_livros(livros_exibir=None):
+        print("livros a exibir:",livros_exibir)
     # Limpa os elementos atuais e insere os livros da lista
         lista_livros_coluna.controls.clear()
         lista_para_mostrar = livros_exibir if livros_exibir is not None else livros
@@ -185,7 +192,8 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                 ft.Row(
                                     controls=[
                                         ft.TextButton(text='Editar Detalhes'),
-                                        ft.TextButton(text='Excluir livro',on_click=lambda e, livro_id=livro['idlivro']: excluirLivro(livro_id))                                    ],
+                                        ft.TextButton(text='Excluir livro',on_click=lambda e, livro_id=livro['idlivro']: excluirLivro(livro_id))
+                                        ],
                                     alignment=ft.MainAxisAlignment.END,
                                     spacing=10
                                 )
@@ -203,15 +211,14 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                 ft.Text("Erro: Livro com dados inválidos.", color='red')
             )
         page.update()
+    
+    # Função para atualizar a exibição da lista de historico na tela
+    def atualizar_lista_historicos():
+        # Limpa os elementos atuais e insere os livros da lista
+        lista_historicos_coluna.controls.clear()
 
-
-
-
-    '''def atualizar_lista_de_usuarios():
-        # Limpa os elementos atuais e insere os usuarios da lista
-        lista_usuarios_coluna.controls.clear()
-        for usuario in usuarios:
-            lista_usuarios_coluna.controls.append(
+        for historico in historicos:
+            lista_historicos_coluna.controls.append(
                 ft.Card(
                     content=ft.Container(
                         content=ft.Column(
@@ -220,17 +227,29 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                                     controls=[
                                         ft.Column(
                                             controls=[
-                                                ft.Text(f"nome: {usuario['nome']}"),
-                                                ft.Text(f"email: {usuario['email']}"),
+                                                ft.Text(f"Usuário: {historico['idusuario']}"),
+                                                ft.Text(f"Livro: {historico['livro']}"),
+                                                ft.Text(f"Data de Empréstimo: {historico['data_emprestimo']}"),
+                                                ft.Text(f"Data de Devolução: {historico['data_devolucao']}"),
+                                                ft.Text(f"Empréstimo ID: {historico['idhistorico']}"),
+                                                ft.Text(f"Multa: {historico['multa']} R$"),
                                             ],
                                             spacing=5
                                         ),
                                     ],
-                                    spacing=10
+                                    spacing=10 
                                 ),
                                 ft.Row(
                                     controls=[
-                                        ft.TextButton(text='Fazer emprestimo'),
+                                        ft.TextButton(
+                                            text="Devolvido" if historico['devolvido'] else "Devolver livro",
+                                            on_click=lambda e, emprestimo_id=historico['idhistorico'], livro=historico['livro']: book_return(
+                                            idhistorico=emprestimo_id, 
+                                            livro=livro, 
+                                            button=e.control
+                                            ),
+                                            disabled=historico['devolvido'])
+
                                     ],
                                     alignment=ft.MainAxisAlignment.END,
                                     spacing=10
@@ -244,8 +263,8 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                     elevation=4
                 )
             )
-        page.update()''' 
-    
+            page.update()
+
     # Função de tela de empréstimo
     def show_add_loan_dialog(e):
         usuario = ft.TextField(label="Nome ou Email", width=400)
@@ -258,11 +277,11 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         def close_dialog(e):
             page.dialog.open = False
             page.update()
-    
+
         # Função para validar data no formato YYYY-MM-DD
         def validar_data(data_texto):
             try:
-                datetime.datetime.strptime(data_texto, "%Y-%m-%d")
+                datetime.strptime(data_texto, "%Y-%m-%d").date()
                 return True
             except ValueError:
                 return False
@@ -280,26 +299,34 @@ def tela_principal_bibliotecario_view(page: ft.Page):
                 message_container.value = "Todos os campos são obrigatórios."
                 page.update()
                 return
-        
+
             if not (validar_data(data_emp) and validar_data(data_dev)):
                 message_container.value = "Datas devem estar no formato YYYY-MM-DD."
                 page.update()
                 return
 
+            # Formatar as datas para garantir que seja apenas YYYY-MM-DD
+            data_emp_formatada = datetime.strptime(data_emp, "%Y-%m-%d").date().strftime("%Y-%m-%d")
+            data_dev_formatada = datetime.strptime(data_dev, "%Y-%m-%d").date().strftime("%Y-%m-%d")
+
             # Criação do objeto de dados para o empréstimo
             emprestimo_data = {
                 "usuario": usuario_nome_email,
                 "livro": livro_titulo_id,
-                "data_emprestimo": data_emp,
-                "data_devolucao": data_dev,
+                "data_emprestimo": data_emp_formatada,
+                "data_devolucao": data_dev_formatada,
             }
 
             # Envio dos dados para o backend
             try:
                 response = requests.post("http://127.0.0.1:5000/emprestimo", json=emprestimo_data)
-                if response.status_code == 201: 
+                if response.status_code == 201:
                     message_container.value = "Empréstimo adicionado com sucesso!"
                     message_container.color = "green"
+
+                    carregar_historicos()
+                    carregar_livros()
+
                     close_dialog(e)  # Fecha o diálogo após o sucesso
                 else:
                     message_container.value = "Erro ao adicionar empréstimo. Tente novamente."
@@ -332,6 +359,49 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         page.dialog = dialog
         dialog.open = True
         page.update()
+
+        
+    #Função de devolução de livros
+    def book_return(idhistorico, livro, button):
+        
+        try:
+            
+            print(idhistorico)
+            print(livro)
+ 
+            # Enviar o livro como dicionário contendo 'id' ou 'titulo'
+            if isinstance(livro, int):  # Se 'livro' for um ID
+                livro_info = {'idlivro': livro}
+            elif isinstance(livro, str):  # Se 'livro' for um título
+                livro_info = {'livro': livro}
+            else:
+                livro_info = livro  # Se já for um dicionário
+
+            devolucao_data = {
+                "idhistorico": idhistorico,
+                "livro": livro_info  # Passa 'livro' como um dicionário
+            }
+
+            response = requests.put("http://127.0.0.1:5000/emprestimo", json=devolucao_data)
+
+            if response.status_code == 200:
+                print("Livro devolvido com sucesso!")
+            
+                # Atualiza o botão na interface
+                button.text = "Devolvido"
+                button.enabled = False
+                button.on_click = None
+                button.update()
+
+                # Atualiza a lista de livros
+                carregar_livros()
+            else:
+                print("Erro ao devolver o livro.")
+                print(f"Erro: {response.json().get('message', 'Erro desconhecido')}")
+
+        except Exception as ex:
+            print(f"Ocorreu um erro: {ex}")
+
 
 
     #Função de tela de adição de livros no estoque
@@ -473,10 +543,24 @@ def tela_principal_bibliotecario_view(page: ft.Page):
 
 
     # Coluna para listar os livros
-    lista_livros_coluna = ft.Column()
-    lista_usuarios_coluna = ft.Column()
+    lista_livros_coluna = ft.ListView(
+        controls=[],  
+        expand=True,  
+        spacing=10,   
+        padding=ft.padding.all(10),
+        auto_scroll=True  
+    )
 
-        # Pesquisa de livro
+    lista_historicos_coluna = ft.ListView(
+        controls=[],  
+        expand=True,
+        spacing=10,
+        padding=ft.padding.all(10),
+        auto_scroll=True  
+    )
+
+    
+    # Pesquisa de livro
     def on_search(e):
         # Pega o valor do campo de texto
         campo = search_field.value.strip()
@@ -502,13 +586,13 @@ def tela_principal_bibliotecario_view(page: ft.Page):
         # Atualiza a interface com os resultados
         if resultado:
             atualizar_lista_de_livros(resultado)  # Passa diretamente resultado
-            result_text.value = "Livros encontrados:"
+            result_text.value = "Livros encontrados"
         else:
             result_text.value = "Por favor digite um titulo para pesquisar"
-            atualizar_lista_de_livros()
+            atualizar_lista_de_livros(livros)
 
         # Atualiza a interface
-        page.update()
+    page.update()
 
     search_field = ft.TextField(label="Buscar no estoque", 
         expand=True,
@@ -517,192 +601,193 @@ def tela_principal_bibliotecario_view(page: ft.Page):
     result_text = ft.Text(value="", size=20)
     
     
-    #Parte visual da tela de bibliotecario
-    tela_principal_bibliotecario = ft.Tabs(
-        selected_index=1,
-        animation_duration=300,
-        tabs=[
-            ft.Tab(
-                text="Estoque de Livros",
-                content=ft.Container(
-                    content=ft.Column(
-                        controls=[
-                            ft.Row(
-                                controls=[
-                                   search_field,
-                                    ft.IconButton(
-                                        icon="search",
-                                        on_click=on_search, # pesquisa de livros pelo icone da lupa
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.START,
-                                spacing=10
-                            ),
-                            ft.ElevatedButton(
-                                text="Adicionar Novo Livro",
-                                icon="add",
-                                height=50,
-                                width=300,
-                                on_click=show_add_book_dialog
-                            ),
-                            lista_livros_coluna  # Exibe a lista de livros aqui
-                        ],
-                        alignment=ft.alignment.top_left,
-                        spacing=10
-                    ),
-                    alignment=ft.alignment.top_left,
-                    padding=ft.padding.all(10)
-                ),
-                icon=ft.icons.BOOK
-            ),
-           ft.Tab(
-                text="Histórico de Empréstimos",
-                content=ft.Container(
-                    content=ft.Column(
-                        controls=[
-                            ft.Row(
-                                controls=[
-                                    ft.TextField(
-                                        label="Buscar usuários", 
-                                        expand=True
-                                    ),
-                                    ft.IconButton(
-                                        icon="search"
-                                    )
-                                ],
-                                alignment=ft.MainAxisAlignment.START,
-                                spacing=10
-                            ),
-                            ft.ElevatedButton(
-                                text="Adicionar Novo Empréstimo",
-                                icon="add",
-                                height=50,
-                                width=300,
-                                on_click=show_add_loan_dialog
-                            ),
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        spacing=10
-                    ),
-                    alignment=ft.alignment.top_left,
-                    padding=ft.padding.all(10)
-                ),
-                icon=ft.icons.PERSON
-            ),
-            ft.Tab(
-                text="Configurações",
-                content=ft.Container(
-                    content=ft.Column(
-                        controls=[
-                            ft.Text("Configurações Gerais"),
-                            ft.Switch(label="Notificações"),
-                            ft.Switch(label="Modo Escuro"),
-                            ft.TextButton(text="Redefinir Configurações", on_click=lambda e: print("Configurações Redefinidas")),
-                            ft.Text("Configurações de Usuário"),
-                            ft.Row(
-                                controls=[
-                                    ft.ElevatedButton(
-                                        text="Dados de Bibliotecário", 
-                                        expand=True, 
-                                        icon="Person",
-                                        icon_color="white",
-                                        color="white",
-                                        height=60,
-                                        style=ft.ButtonStyle(
-                                            alignment=ft.alignment.center_left,
-                                            shape=ft.RoundedRectangleBorder(radius=0)
-                                        )
-                                    )
-                                ]
-                            ),
-                            ft.Row(
-                                controls=[
-                                    ft.ElevatedButton(
-                                        text="Editar Perfil", 
-                                        expand=True, 
-                                        icon="Edit",
-                                        icon_color="white",
-                                        color="white",
-                                        height=60,
-                                        style=ft.ButtonStyle(
-                                            alignment=ft.alignment.center_left,
-                                            shape=ft.RoundedRectangleBorder(radius=0)
-                                        )
-                                    )
-                                ]
-                            ),
-                            ft.Row(
-                                controls=[
-                                    ft.ElevatedButton(
-                                        text="Alterar Senha", 
-                                        expand=True, 
-                                        icon="Lock",
-                                        icon_color="white",
-                                        color="white",
-                                        height=60,
-                                        style=ft.ButtonStyle(
-                                            alignment=ft.alignment.center_left,
-                                            shape=ft.RoundedRectangleBorder(radius=0)
-                                        )
-                                    )
-                                ]
-                            ),
-                            ft.Row(
-                                controls=[
-                                    ft.ElevatedButton(
-                                        text="Política de Privacidade e Termos de Uso", 
-                                        expand=True, 
-                                        icon="Menu_book",
-                                        icon_color="white",
-                                        color="white",
-                                        height=60,
-                                        style=ft.ButtonStyle(
-                                            alignment=ft.alignment.center_left,
-                                            shape=ft.RoundedRectangleBorder(radius=0)
-                                        )
-                                    )
-                                ]
-                            ),
-                            ft.Row(
-                                controls=[
-                                    ft.ElevatedButton(
-                                        text="Excluir Conta", 
-                                        expand=True, 
-                                        icon="HIGHLIGHT_REMOVE",
-                                        icon_color="red",
-                                        color="red",
-                                        height=60,
-                                        style=ft.ButtonStyle(
-                                            alignment=ft.alignment.center_left,
-                                            shape=ft.RoundedRectangleBorder(radius=0)
-                                        )
-                                    )
-                                ]
-                            ),
-                            ft.Row(
-                                controls=[
-                                    ft.CupertinoButton(
-                                        text="Sair da Conta", 
-                                        color="red"
-                                    )
-                                ]
-                            ),
-                            
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        spacing=10
-                    ),
-                    alignment=ft.alignment.top_left,
-                    padding=ft.padding.all(10)
-                ),
-                icon=ft.icons.SETTINGS,
-            )
-        ],
-        expand=1
-    )
 
+    # Parte visual da tela de bibliotecário
+    tela_principal_bibliotecario = ft.Tabs(
+    selected_index=1,
+    animation_duration=300,
+    tabs=[
+        ft.Tab(
+            text="Estoque de Livros",
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                search_field,
+                                ft.IconButton(
+                                    icon="search",
+                                    on_click=on_search,  # pesquisa de livros pelo icone da lupa
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.START,
+                            spacing=10
+                        ),
+                        ft.ElevatedButton(
+                            text="Adicionar Novo Livro",
+                            icon="add",
+                            height=50,
+                            width=300,
+                            on_click=show_add_book_dialog
+                        ),
+                        lista_livros_coluna  # Exibe a lista de livros aqui
+                    ],
+                    alignment=ft.alignment.top_left,
+                    spacing=10
+                ),
+                alignment=ft.alignment.top_left,
+                padding=ft.padding.all(10)
+            ),
+            icon=ft.icons.BOOK
+        ),
+        ft.Tab(
+            text="Histórico de Empréstimos",
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                ft.TextField(
+                                    label="Buscar usuários", 
+                                    expand=True
+                                ),
+                                ft.IconButton(
+                                    icon="search"
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.START,
+                            spacing=10
+                        ),
+                        ft.ElevatedButton(
+                            text="Adicionar Novo Empréstimo",
+                            icon="add",
+                            height=50,
+                            width=300,
+                            on_click=show_add_loan_dialog
+                        ),
+                        lista_historicos_coluna  # Exibe a lista de históricos aqui
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                    spacing=10
+                ),
+                alignment=ft.alignment.top_left,
+                padding=ft.padding.all(10)
+            ),
+            icon=ft.icons.PERSON
+        ),
+        ft.Tab(
+            text="Configurações",
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Text("Configurações Gerais"),
+                        ft.Switch(label="Notificações"),
+                        ft.Switch(label="Modo Escuro"),
+                        ft.TextButton(text="Redefinir Configurações", on_click=lambda e: print("Configurações Redefinidas")),
+                        ft.Text("Configurações de Usuário"),
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Dados de Bibliotecário", 
+                                    expand=True, 
+                                    icon="Person",
+                                    icon_color="white",
+                                    color="white",
+                                    height=60,
+                                    style=ft.ButtonStyle(
+                                        alignment=ft.alignment.center_left,
+                                        shape=ft.RoundedRectangleBorder(radius=0)
+                                    )
+                                )
+                            ]
+                        ),
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Editar Perfil", 
+                                    expand=True, 
+                                    icon="Edit",
+                                    icon_color="white",
+                                    color="white",
+                                    height=60,
+                                    style=ft.ButtonStyle(
+                                        alignment=ft.alignment.center_left,
+                                        shape=ft.RoundedRectangleBorder(radius=0)
+                                    )
+                                )
+                            ]
+                        ),
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Alterar Senha", 
+                                    expand=True, 
+                                    icon="Lock",
+                                    icon_color="white",
+                                    color="white",
+                                    height=60,
+                                    style=ft.ButtonStyle(
+                                        alignment=ft.alignment.center_left,
+                                        shape=ft.RoundedRectangleBorder(radius=0)
+                                    )
+                                )
+                            ]
+                        ),
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Política de Privacidade e Termos de Uso", 
+                                    expand=True, 
+                                    icon="Menu_book",
+                                    icon_color="white",
+                                    color="white",
+                                    height=60,
+                                    style=ft.ButtonStyle(
+                                        alignment=ft.alignment.center_left,
+                                        shape=ft.RoundedRectangleBorder(radius=0)
+                                    )
+                                )
+                            ]
+                        ),
+                        ft.Row(
+                            controls=[
+                                ft.ElevatedButton(
+                                    text="Excluir Conta", 
+                                    expand=True, 
+                                    icon="HIGHLIGHT_REMOVE",
+                                    icon_color="red",
+                                    color="red",
+                                    height=60,
+                                    style=ft.ButtonStyle(
+                                        alignment=ft.alignment.center_left,
+                                        shape=ft.RoundedRectangleBorder(radius=0)
+                                    )
+                                )
+                            ]
+                        ),
+                        ft.Row(
+                            controls=[
+                                ft.CupertinoButton(
+                                    text="Sair da Conta", 
+                                    color="red"
+                                )
+                            ]
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                    spacing=10
+                ),
+                alignment=ft.alignment.top_left,
+                padding=ft.padding.all(10)
+            ),
+            icon=ft.icons.SETTINGS,
+        )
+    ],
+    expand=1
+    )
     page.add(tela_principal_bibliotecario)
     carregar_livros() #carrega os livros ao iniciar a tela
+    carregar_historicos() #carrega os emprestimos na tela
     page.update()
 
     return ft.View(
@@ -711,4 +796,4 @@ def tela_principal_bibliotecario_view(page: ft.Page):
             tela_principal_bibliotecario,
         ],
         horizontal_alignment='center'
-    )
+    )   
