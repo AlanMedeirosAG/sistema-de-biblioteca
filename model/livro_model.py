@@ -47,7 +47,7 @@ def get_livros():
         print(resultado)
         return resultado
 
-#Função que busca um livro atraves de uma query
+# Função que busca um livro através de uma query
 def pesquisaLivro(titulo=None, idlivro=None):
     # Cria conexão com o banco de dados
     conexao = create_server_connection()
@@ -99,6 +99,8 @@ def pesquisaLivro(titulo=None, idlivro=None):
         return None
     finally:
         conexao.close()  # Garante que a conexão seja fechada no final
+
+
 
 #Função que atualiza um livro atraves de uma query
 def update_livro(id, data):
