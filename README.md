@@ -31,7 +31,7 @@ Esquema de tabelas:
 
 3. Instalação:
 
-- Baixar o arquivo "projeto.zip" ou clonar o repositório: git clone https://github.com/AlanMedeirosAG/sistema-de-biblioteca
+- Baixar o arquivo "Projeto.zip" ou clonar o repositório: git clone https://github.com/AlanMedeirosAG/sistema-de-biblioteca
 
 - Criar o esquema no "MySQL Workbench"
 
