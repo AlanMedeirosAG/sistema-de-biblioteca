@@ -8,8 +8,9 @@ from tela_principal_usuario import tela_principal_usuario_view
 
 def main(page: ft.Page):
     page.title = "Login"
+    page.scroll = "adaptive"
 
-    #Função que gerencia as rotas de navegação das paginas
+   #Função que gerencia as rotas de navegação das paginas
     def route_change(route):
         page.views.clear()
 
