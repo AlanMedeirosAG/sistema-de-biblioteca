@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from model.emprestimo_model import create_emprestimo, find_usuario_by_nome_email,verifica_livro_bd,create_devolucao
+from datetime import datetime
+from model.emprestimo_model import create_emprestimo, find_usuario_by_nome_email,verifica_livro_bd,create_devolucao,find_historico_by_id
 
 emprestimo_bp = Blueprint('emprestimo_bp', __name__)
 
@@ -26,8 +27,8 @@ def create_emprestimo_route():
         return jsonify({"message": "Usuário não encontrado."}), 404
     
     livro_info = data.get('livro')
-    titulo = livro_info if isinstance(data.get('livro'), int) else None
-    idlivro = livro_info if isinstance(data.get('livro'), str) else None
+    titulo = livro_info if isinstance(data.get('livro'), str) else None
+    idlivro = livro_info if isinstance(data.get('livro'), int) else None
 
     livro = verifica_livro_bd(titulo=titulo,idlivro=idlivro)
     if not livro:
@@ -53,35 +54,57 @@ def create_emprestimo_route():
         print("Erro interno:", traceback.format_exc())
         return jsonify({"message": f"Erro interno ao criar o empréstimo: {str(e)}"}), 500
 
+
 @emprestimo_bp.route("/emprestimo", methods=['PUT'])
 def book_return_route():
     data = request.json
     
+    print(data)
+
     # Verificação dos dados necessários
     if not data or 'idhistorico' not in data or 'livro' not in data:
-        return jsonify({
-            "message": "Dados insuficientes para criar a devolução"
-        }), 400
+        return jsonify({"message": "Dados insuficientes para processar a devolução."}), 400
 
     livro_info = data.get('livro')
+    livro_id = None
+    livro_titulo = None
 
-    # Identifica se livro_info é um ID (int) ou um título (str)
-    livro_id = livro_info if isinstance(livro_info, int) else None
-    livro_titulo = livro_info if isinstance(livro_info, str) else None
-    
-    # Chama a função de criação do empréstimo usando o ID do usuário encontrado
+    if isinstance(livro_info, dict):  # Quando livro é um dicionário
+        livro_id = livro_info.get('idlivro')
+        livro_titulo = livro_info.get('livro')
+    elif isinstance(livro_info, int):  # Quando livro é um ID (inteiro)
+        livro_id = livro_info
+    elif isinstance(livro_info, str):  # Quando livro é um título (string)
+        livro_titulo = livro_info
+
     try:
+        # Busca informações do histórico pelo idhistorico
+        historico = find_historico_by_id(data['idhistorico'])
+        if not historico:
+            return jsonify({"message": "Histórico não encontrado."}), 404
+
+        # Verifica se já foi devolvido
+        if historico.get('devolvido', False):  # Verificando se já foi devolvido
+            return jsonify({"message": "Este empréstimo já foi devolvido."}), 400
+
+        # Adicionar validação para o livro (opcional)
+        if livro_id is None and livro_titulo is None:
+            return jsonify({"message": "Dados do livro inválidos."}), 400
+
+        # Atualiza o histórico para marcar como devolvido
         resultado = create_devolucao(
-            idhistorico=data['idhistorico'],  # Use a chave correta para o histórico
-            livro_id=livro_id,  # Se for um ID numérico
-            livro_titulo=livro_titulo  # Se for o título do livro 
+            idhistorico=data['idhistorico'],
+            livro_id=livro_id,
+            livro_titulo=livro_titulo,
         )
-        
+
         if resultado:
-            return jsonify({"message": resultado}), 200  # Alterei para 200, pois é uma operação bem-sucedida
+            return jsonify({"message": resultado}), 200
         else:
-            return jsonify({"message": "Erro na devolução."}), 500
+            return jsonify({"message": "Erro ao registrar a devolução."}), 500
+
     except Exception as e:
         import traceback
         print("Erro interno:", traceback.format_exc())
         return jsonify({"message": f"Erro interno na devolução: {str(e)}"}), 500
+        
