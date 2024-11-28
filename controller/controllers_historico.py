@@ -12,7 +12,7 @@ def create_histotico_route():
     return jsonify({"message": "historico inserted successfully"}), 201
 
 # Rota para obter um historico (GET /historico)
-@historico_bp.route('/historico_bp', methods=['GET'])
+@historico_bp.route('/historico', methods=['GET'])
 def get_histotico_route():
     historico = get_historico()
     return jsonify(historico), 200
@@ -29,3 +29,4 @@ def update_histotico_route(id):
 def delete_histotico_route(id):
     delete_historico(id)
     return jsonify({"message": "historico deleted successfully"}), 200
+    
