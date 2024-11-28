@@ -9,6 +9,16 @@ Este projeto foi criado para facilitar a organização e o controle de emprésti
 
 - Node.js v22.8.0
 - Python 3.12.6
+- MySQL Workbench
+
+Esquema de tabelas:
+
+
+![Captura de tela 2024-11-28 203149](https://github.com/user-attachments/assets/e32e2842-da59-4eae-9433-269fc049095f)
+
+![Captura de tela 2024-11-28 203207](https://github.com/user-attachments/assets/b9828e3a-99c3-4a91-a3dd-d024832e47eb)
+
+![Captura de tela 2024-11-28 203221](https://github.com/user-attachments/assets/3930923e-739d-4660-b12d-5b75b75bfd04)
 
 2.3. Dependencias necessárias para rodar o projeto:
 
@@ -20,5 +30,15 @@ Este projeto foi criado para facilitar a organização e o controle de emprésti
 - **Werkzeug**: Ferramenta para manipulação de WSGI e servidores web.
 
 3. Instalação:
+
+- Baixar o arquivo "projeto.zip" ou clonar o repositório: git clone https://github.com/AlanMedeirosAG/sistema-de-biblioteca
+
+- Criar o esquema no "MySQL Workbench"
+
+- Abrir a IDE de sua preferencia 
+
+- Após isso usar o comando pip install -r requirements.txt para instalar as dependencias
+
+- Rodar o arquivo "app.py" e depois "main.py"
 
 4. Imagens do sistema:
