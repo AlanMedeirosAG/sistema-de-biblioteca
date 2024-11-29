@@ -33,6 +33,8 @@ Esquema de tabelas:
 
 - Baixar o arquivo "Projeto.zip" ou clonar o repositório: git clone https://github.com/AlanMedeirosAG/sistema-de-biblioteca
 
+![Captura de tela 2024-11-29 073227](https://github.com/user-attachments/assets/fe7be053-4e11-422e-ab32-76bd53d8f4d9)
+
 - Criar o esquema no "MySQL Workbench"
 
 - Abrir a IDE de sua preferencia 
@@ -40,5 +42,3 @@ Esquema de tabelas:
 - Após isso usar o comando pip install -r requirements.txt para instalar as dependencias
 
 - Rodar o arquivo "app.py" e depois "main.py"
-
-4. Imagens do sistema:
