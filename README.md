@@ -37,8 +37,14 @@ Esquema de tabelas:
 
 - Criar o esquema no "MySQL Workbench"
 
+![image](https://github.com/user-attachments/assets/5a9d7115-2e93-4f17-83fb-5d76ff413b8e)
+
+Configurações usadas no arquivo "Server.py" para criar o servidor
+
 - Abrir a IDE de sua preferencia 
 
 - Após isso usar o comando "pip install -r requirements.txt" para instalar as dependencias
 
 - Rodar o arquivo "app.py" e depois "main.py"
+
+Obs:É aceitavel usar um terminal dedicado em sua IDE para rodar o "app.py" e "main.py"
