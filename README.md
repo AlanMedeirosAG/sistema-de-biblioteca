@@ -13,6 +13,8 @@ Este projeto foi criado para facilitar a organização e o controle de emprésti
 
 Esquema de tabelas:
 
+Obs:Nome usado no esquema das tabelas no MySQL "bdgerencia"
+
 
 ![Captura de tela 2024-11-28 203149](https://github.com/user-attachments/assets/e32e2842-da59-4eae-9433-269fc049095f)
 
