@@ -39,6 +39,6 @@ Esquema de tabelas:
 
 - Abrir a IDE de sua preferencia 
 
-- Após isso usar o comando pip install -r requirements.txt para instalar as dependencias
+- Após isso usar o comando "pip install -r requirements.txt" para instalar as dependencias
 
 - Rodar o arquivo "app.py" e depois "main.py"
